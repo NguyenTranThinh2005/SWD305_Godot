@@ -1,0 +1,714 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VNEG – Admin Panel</title>
+    <link rel="stylesheet" href="../style.css">
+    <style>
+        body {
+            background: var(--c-bg);
+        }
+
+        .layout {
+            display: grid;
+            grid-template-columns: 220px 1fr;
+            min-height: 100vh;
+        }
+
+        @media(max-width:900px) {
+            .layout {
+                grid-template-columns: 1fr;
+            }
+
+            .sidebar {
+                display: none;
+            }
+        }
+
+        .sidebar {
+            background: var(--c-bg-2);
+            border-right: 1px solid var(--c-border);
+            padding: var(--sp-lg);
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+            position: sticky;
+            top: 0;
+            height: 100vh;
+            overflow-y: auto;
+        }
+
+        .sidebar-logo {
+            display: flex;
+            align-items: center;
+            gap: var(--sp-sm);
+            padding: var(--sp-md) 0;
+            margin-bottom: var(--sp-md);
+            border-bottom: 1px solid var(--c-border);
+            text-decoration: none;
+            color: var(--c-text);
+            font-weight: 800;
+            font-size: 1.2rem;
+        }
+
+        .sidebar-logo-icon {
+            width: 36px;
+            height: 36px;
+            background: var(--g-primary);
+            border-radius: var(--r-sm);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1rem;
+            box-shadow: var(--glow-primary);
+        }
+
+        .sidebar-link {
+            display: flex;
+            align-items: center;
+            gap: var(--sp-md);
+            padding: 10px var(--sp-md);
+            border-radius: var(--r-md);
+            color: var(--c-text-2);
+            text-decoration: none;
+            font-size: 0.88rem;
+            font-weight: 500;
+            transition: all var(--t-fast);
+        }
+
+        .sidebar-link:hover {
+            background: var(--c-surface-2);
+            color: var(--c-text);
+        }
+
+        .sidebar-link.active {
+            background: rgba(108, 99, 255, 0.15);
+            color: var(--c-primary-2);
+        }
+
+        .sidebar-link .icon {
+            font-size: 1rem;
+            width: 22px;
+            text-align: center;
+        }
+
+        .sst {
+            font-size: 0.7rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--c-text-3);
+            padding: var(--sp-sm) var(--sp-md);
+            margin-top: var(--sp-sm);
+        }
+
+        .sidebar-foot {
+            margin-top: auto;
+            padding-top: var(--sp-md);
+            border-top: 1px solid var(--c-border);
+        }
+
+        .main-content {
+            overflow-y: auto;
+            padding: var(--sp-xl);
+        }
+
+        .admin-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: var(--sp-xl);
+        }
+
+        .admin-badge {
+            display: flex;
+            align-items: center;
+            gap: var(--sp-sm);
+            padding: 6px var(--sp-md);
+            background: rgba(255, 82, 82, 0.1);
+            border: 1px solid rgba(255, 82, 82, 0.3);
+            border-radius: var(--r-full);
+            color: var(--c-danger);
+            font-size: 0.82rem;
+            font-weight: 600;
+        }
+
+        /* Inline form for create/edit */
+        .inline-form {
+            background: var(--c-bg-3);
+            border: 1px solid var(--c-border-2);
+            border-radius: var(--r-lg);
+            padding: var(--sp-lg);
+            margin-bottom: var(--sp-lg);
+        }
+
+        .inline-form-title {
+            font-size: 1rem;
+            font-weight: 700;
+            margin-bottom: var(--sp-md);
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: var(--sp-md);
+            margin-bottom: var(--sp-md);
+        }
+
+        /* Filter bar */
+        .filter-bar {
+            display: flex;
+            align-items: center;
+            gap: var(--sp-md);
+            margin-bottom: var(--sp-lg);
+            flex-wrap: wrap;
+        }
+
+        .filter-bar input,
+        .filter-bar select {
+            max-width: 200px;
+        }
+
+        /* Action cell */
+        .action-cell {
+            display: flex;
+            gap: 6px;
+        }
+
+        /* Stats overview */
+        .admin-stats {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: var(--sp-md);
+            margin-bottom: var(--sp-xl);
+        }
+
+        @media(max-width:768px) {
+            .admin-stats {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        .form-check {
+            display: flex;
+            align-items: center;
+            gap: var(--sp-sm);
+        }
+
+        .form-check input[type=checkbox] {
+            width: 18px;
+            height: 18px;
+            accent-color: var(--c-primary);
+        }
+
+        /* Row highlight for own user */
+        .row-me td {
+            background: rgba(108, 99, 255, 0.06);
+        }
+    </style>
+</head>
+
+<body>
+    <div class="starfield"></div>
+    <div class="layout page-content">
+        <aside class="sidebar">
+            <a class="sidebar-logo" href="dashboard.html">
+                <div class="sidebar-logo-icon">🌀</div> VNEG
+            </a>
+            <p class="sst">Admin</p>
+            <a class="sidebar-link active" href="#" onclick="switchTab('users',this)"><span class="icon">👤</span> Người
+                dùng</a>
+            <a class="sidebar-link" href="#" onclick="switchTab('games',this)"><span class="icon">🎮</span> Games</a>
+            <a class="sidebar-link" href="#" onclick="switchTab('grammar',this)"><span class="icon">📚</span> Grammar
+                Topics</a>
+            <a class="sidebar-link" href="#" onclick="switchTab('questions',this)"><span class="icon">❓</span> Câu
+                hỏi</a>
+            <a class="sidebar-link" href="#" onclick="switchTab('stats',this)"><span class="icon">📊</span> Thống kê</a>
+            <p class="sst">Học sinh</p>
+            <a class="sidebar-link" href="dashboard.html"><span class="icon">🏠</span> Dashboard</a>
+            <a class="sidebar-link" href="world-map.html"><span class="icon">🗺️</span> Thế giới</a>
+            <div class="sidebar-foot">
+                <button class="btn btn-secondary btn-sm btn-full" onclick="handleLogout()">🚪 Đăng xuất</button>
+            </div>
+        </aside>
+
+        <main class="main-content">
+            <div class="admin-header">
+                <div>
+                    <div style="font-size:1.8rem;font-weight:900">⚙️ Admin Panel</div>
+                    <div style="color:var(--c-text-2);font-size:0.9rem" id="adminAuthInfo"></div>
+                </div>
+                <div class="admin-badge">🔒 Admin Only</div>
+            </div>
+
+            <!-- Summary stats -->
+            <div class="admin-stats" id="adminStats">
+                <div class="stat-card">
+                    <div class="stat-icon">👤</div>
+                    <div class="stat-value text-gradient" id="stUsers">–</div>
+                    <div class="stat-label">Tổng người dùng</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">🎮</div>
+                    <div class="stat-value text-gradient" id="stGames">–</div>
+                    <div class="stat-label">Tổng games</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">📚</div>
+                    <div class="stat-value text-gradient" id="stTopics">–</div>
+                    <div class="stat-label">Grammar topics</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">❓</div>
+                    <div class="stat-value text-gradient" id="stQuestions">–</div>
+                    <div class="stat-label">Câu hỏi</div>
+                </div>
+            </div>
+
+            <!-- USERS TAB -->
+            <div id="tab-users" class="tab-section">
+                <div class="filter-bar">
+                    <input class="form-control" id="userSearch" placeholder="🔍 Tìm theo email..."
+                        oninput="filterUsers()">
+                    <select class="form-control" id="roleFilter" onchange="filterUsers()">
+                        <option value="">Tất cả role</option>
+                        <option value="user">User</option>
+                        <option value="admin">Admin</option>
+                    </select>
+                    <select class="form-control" id="activeFilter" onchange="filterUsers()">
+                        <option value="">Tất cả trạng thái</option>
+                        <option value="true">Đang hoạt động</option>
+                        <option value="false">Bị khóa</option>
+                    </select>
+                </div>
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Email</th>
+                                <th>Lớp</th>
+                                <th>Vùng</th>
+                                <th>Role</th>
+                                <th>Trạng thái</th>
+                                <th>Ngày tạo</th>
+                                <th>Hành động</th>
+                            </tr>
+                        </thead>
+                        <tbody id="userTable">
+                            <tr>
+                                <td colspan="8" style="text-align:center;padding:var(--sp-xl)">
+                                    <div class="spinner" style="margin:auto"></div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- GAMES TAB -->
+            <div id="tab-games" class="tab-section hidden">
+                <div class="inline-form" id="gameForm">
+                    <div class="inline-form-title" id="gameFormTitle">➕ Thêm Game mới</div>
+                    <div class="form-row">
+                        <div class="form-group"><label class="form-label">Tên game *</label><input id="gName"
+                                class="form-control" placeholder="Tên game"></div>
+                        <div class="form-group"><label class="form-label">Map ID *</label><input id="gMapId"
+                                class="form-control" type="number" placeholder="ID map"></div>
+                        <div class="form-group"><label class="form-label">Loại</label>
+                            <select id="gType" class="form-control">
+                                <option value="main">main</option>
+                                <option value="mini">mini</option>
+                                <option value="boss">boss</option>
+                            </select>
+                        </div>
+                        <div class="form-group"><label class="form-label">Thứ tự</label><input id="gOrder"
+                                class="form-control" type="number" placeholder="1" value="1"></div>
+                        <div class="form-group"><label class="form-label">Flow (JSON)</label><input id="gFlow"
+                                class="form-control" placeholder='["intro","practice"]'></div>
+                        <div class="form-group" style="display:flex;align-items:flex-end">
+                            <div class="form-check"><input type="checkbox" id="gPremium"><label for="gPremium"
+                                    class="form-label" style="margin-bottom:0">Premium</label></div>
+                        </div>
+                    </div>
+                    <div style="display:flex;gap:var(--sp-md)">
+                        <button class="btn btn-primary" onclick="saveGame()">💾 Lưu</button>
+                        <button class="btn btn-secondary" onclick="resetGameForm()">↩ Reset</button>
+                    </div>
+                </div>
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Tên</th>
+                                <th>Map ID</th>
+                                <th>Loại</th>
+                                <th>Thứ tự</th>
+                                <th>Premium</th>
+                                <th>Hành động</th>
+                            </tr>
+                        </thead>
+                        <tbody id="gameTable">
+                            <tr>
+                                <td colspan="7" style="text-align:center;padding:var(--sp-xl)">
+                                    <div class="spinner" style="margin:auto"></div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- GRAMMAR TAB -->
+            <div id="tab-grammar" class="tab-section hidden">
+                <div class="inline-form">
+                    <div class="inline-form-title" id="grammarFormTitle">➕ Thêm Grammar Topic</div>
+                    <div class="form-row">
+                        <div class="form-group"><label class="form-label">Code *</label><input id="gtCode"
+                                class="form-control" placeholder="vd: G1.1"></div>
+                        <div class="form-group"><label class="form-label">Tên *</label><input id="gtName"
+                                class="form-control" placeholder="Tên chủ đề"></div>
+                        <div class="form-group"><label class="form-label">Parent ID</label><input id="gtParent"
+                                class="form-control" type="number" placeholder="Để trống nếu là gốc"></div>
+                        <div class="form-group"><label class="form-label">Lớp tối thiểu</label><input id="gtMin"
+                                class="form-control" type="number" min="1" max="12" placeholder="1"></div>
+                        <div class="form-group"><label class="form-label">Lớp tối đa</label><input id="gtMax"
+                                class="form-control" type="number" min="1" max="12" placeholder="12"></div>
+                        <div class="form-group"><label class="form-label">Độ khó</label>
+                            <select id="gtDiff" class="form-control">
+                                <option value="easy">Dễ</option>
+                                <option value="medium">Trung bình</option>
+                                <option value="hard">Khó</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group"><label class="form-label">Mô tả</label><input id="gtDesc"
+                            class="form-control" placeholder="Mô tả ngắn"></div>
+                    <div class="form-group"><label class="form-label">Ví dụ</label><input id="gtExample"
+                            class="form-control" placeholder="VD: Bị/được dùng để..."></div>
+                    <div style="display:flex;gap:var(--sp-md)">
+                        <button class="btn btn-primary" onclick="saveGrammar()">💾 Lưu</button>
+                        <button class="btn btn-secondary" onclick="resetGrammarForm()">↩ Reset</button>
+                    </div>
+                </div>
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Code</th>
+                                <th>Tên</th>
+                                <th>Parent</th>
+                                <th>Lớp</th>
+                                <th>Độ khó</th>
+                                <th>Active</th>
+                                <th>Hành động</th>
+                            </tr>
+                        </thead>
+                        <tbody id="grammarTable">
+                            <tr>
+                                <td colspan="8" style="text-align:center;padding:var(--sp-xl)">
+                                    <div class="spinner" style="margin:auto"></div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- QUESTIONS TAB -->
+            <div id="tab-questions" class="tab-section hidden">
+                <div class="inline-form">
+                    <div class="inline-form-title" id="questionFormTitle">➕ Thêm Câu Hỏi</div>
+                    <div class="form-row">
+                        <div class="form-group"><label class="form-label">Game ID *</label><input id="qGameId"
+                                class="form-control" type="number" placeholder="ID game"></div>
+                        <div class="form-group"><label class="form-label">Loại câu hỏi</label>
+                            <select id="qType" class="form-control">
+                                <option value="mc">Trắc nghiệm</option>
+                                <option value="fill">Điền từ</option>
+                                <option value="order">Sắp xếp</option>
+                            </select>
+                        </div>
+                        <div class="form-group"><label class="form-label">Độ khó</label>
+                            <select id="qDiff" class="form-control">
+                                <option value="easy">Dễ</option>
+                                <option value="medium">Trung bình</option>
+                                <option value="hard">Khó</option>
+                            </select>
+                        </div>
+                        <div class="form-group"><label class="form-label">Đáp án đúng (index)</label><input id="qAnswer"
+                                class="form-control" placeholder="0, 1, 2, 3 hoặc JSON"></div>
+                    </div>
+                    <div class="form-group"><label class="form-label">Dữ liệu câu hỏi (JSON) *</label>
+                        <textarea id="qData" class="form-control" rows="4"
+                            placeholder='{"text":"Cần điền từ nào?","choices":["bị","được","với","bởi"]}'></textarea>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group"><label class="form-label">URL Ảnh</label><input id="qImg"
+                                class="form-control" placeholder="https://..."></div>
+                        <div class="form-group"><label class="form-label">Giải thích</label><input id="qExplain"
+                                class="form-control" placeholder="Giải thích đáp án..."></div>
+                    </div>
+                    <div style="display:flex;gap:var(--sp-md)">
+                        <button class="btn btn-primary" onclick="saveQuestion()">💾 Lưu</button>
+                        <button class="btn btn-secondary" onclick="resetQForm()">↩ Reset</button>
+                    </div>
+                </div>
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Game ID</th>
+                                <th>Loại</th>
+                                <th>Độ khó</th>
+                                <th>Active</th>
+                                <th>Hành động</th>
+                            </tr>
+                        </thead>
+                        <tbody id="questionTable">
+                            <tr>
+                                <td colspan="6" style="text-align:center;padding:var(--sp-xl)">
+                                    <div class="spinner" style="margin:auto"></div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- STATS TAB -->
+            <div id="tab-stats" class="tab-section hidden">
+                <div class="grid-2">
+                    <div class="card-glass">
+                        <div class="card-title mb-md">📊 Phân bổ người dùng theo Lớp</div>
+                        <canvas id="gradeChart" height="220"></canvas>
+                    </div>
+                    <div class="card-glass">
+                        <div class="card-title mb-md">🌍 Phân bổ theo Vùng miền</div>
+                        <canvas id="regionChart" height="220"></canvas>
+                    </div>
+                    <div class="card-glass">
+                        <div class="card-title mb-md">🎮 Games theo Số lượng Session</div>
+                        <canvas id="gameChart" height="220"></canvas>
+                    </div>
+                    <div class="card-glass">
+                        <div class="card-title mb-md">📈 Độ chính xác theo Độ khó</div>
+                        <canvas id="diffChart" height="220"></canvas>
+                    </div>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <div id="toast-container"></div>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+    <script type="module">
+        import { Auth, Admin } from '../api.js';
+        import { requireAuth, logout } from '../js/auth.js';
+
+        const user = requireAuth(['admin']);
+        if (!user) { alert('Chỉ admin mới có thể truy cập trang này.'); window.location.href = 'dashboard.html'; }
+        window.handleLogout = async function () { await Auth.logout(); logout(); };
+        document.getElementById('adminAuthInfo').textContent = `Đăng nhập: ${user.email} · Role: ${user.role}`;
+
+        // ── Tab switching ──
+        let activeTab = 'users';
+        window.switchTab = function (tab, el) {
+            document.querySelectorAll('.tab-section').forEach(s => s.classList.add('hidden'));
+            document.querySelectorAll('.sidebar-link').forEach(l => l.classList.remove('active'));
+            document.getElementById(`tab-${tab}`).classList.remove('hidden');
+            el.classList.add('active');
+            activeTab = tab;
+            loadTab(tab);
+        };
+
+        function loadTab(tab) {
+            if (tab === 'users') loadUsers();
+            if (tab === 'games') loadGames();
+            if (tab === 'grammar') loadGrammar();
+            if (tab === 'questions') loadQuestions();
+            if (tab === 'stats') loadStats();
+        }
+
+        function toast(msg, type = 'info') {
+            const c = document.getElementById('toast-container');
+            const t = document.createElement('div');
+            t.className = `toast toast-${type}`;
+            t.innerHTML = `<span>${{ success: '✅', error: '❌', warning: '⚠️', info: 'ℹ️' }[type]}</span> ${msg}`;
+            c.appendChild(t); setTimeout(() => t.remove(), 3500);
+        }
+
+        // ── Initial load ──
+        let allUsers = [], allGames = [], allGrammar = [], allQuestions = [];
+
+        async function loadSummary() {
+            const [ur, gr, gtr, qr] = await Promise.all([Admin.users.getAll(), Admin.games.getAll(), Admin.grammarTopics.getAll(), Admin.questions.getAll()]);
+            allUsers = ur.data || [];
+            allGames = gr.data || [];
+            allGrammar = gtr.data || [];
+            allQuestions = qr.data || [];
+            document.getElementById('stUsers').textContent = allUsers.length;
+            document.getElementById('stGames').textContent = allGames.length;
+            document.getElementById('stTopics').textContent = allGrammar.length;
+            document.getElementById('stQuestions').textContent = allQuestions.length;
+            renderUserTable(allUsers);
+            renderGameTable(allGames);
+            renderGrammarTable(allGrammar);
+            renderQuestionTable(allQuestions);
+        }
+        loadSummary();
+
+        // ── USERS ──
+        async function loadUsers() { const r = await Admin.users.getAll(); allUsers = r.data || []; renderUserTable(allUsers); }
+        function renderUserTable(users) {
+            document.getElementById('userTable').innerHTML = users.length ? users.map(u => `
+      <tr class="${u.id === user.id ? 'row-me' : ''}">
+        <td>${u.id}</td>
+        <td><div style="font-weight:600">${u.email}</div><div style="font-size:0.75rem;color:var(--c-text-2)">${u.phone || ''}</div></td>
+        <td>${u.grade || '–'}</td>
+        <td>${u.region || '–'}</td>
+        <td><span class="badge ${u.role === 'admin' ? 'badge-danger' : 'badge-primary'}">${u.role}</span></td>
+        <td><span class="badge ${u.isActive ? 'badge-success' : 'badge-warning'}">${u.isActive ? 'Hoạt động' : 'Khóa'}</span></td>
+        <td><span style="font-size:0.8rem">${u.createdAt ? new Date(u.createdAt).toLocaleDateString('vi-VN') : ''}</span></td>
+        <td><div class="action-cell">
+          <button class="btn btn-sm ${u.isActive ? 'btn-warning' : 'btn-success'}" onclick="toggleActive(${u.id},${!u.isActive})">${u.isActive ? '🔒 Khóa' : '🔓 Mở'}</button>
+          <button class="btn btn-sm btn-secondary" onclick="toggleRole(${u.id},'${u.role}')">${u.role === 'admin' ? '→ User' : '→ Admin'}</button>
+        </div></td>
+      </tr>`).join('') :
+                '<tr><td colspan="8" class="empty-state">Không có người dùng nào</td></tr>';
+        }
+        window.filterUsers = function () {
+            const s = document.getElementById('userSearch').value.toLowerCase();
+            const r = document.getElementById('roleFilter').value;
+            const a = document.getElementById('activeFilter').value;
+            renderUserTable(allUsers.filter(u =>
+                (!s || u.email.toLowerCase().includes(s)) &&
+                (!r || u.role === r) &&
+                (a === '' || String(u.isActive) === a)
+            ));
+        };
+        window.toggleActive = async function (id, val) {
+            const r = await Admin.users.setActive(id, val);
+            if (r.ok) { toast(val ? 'Đã mở khóa' : 'Đã khóa tài khoản', 'success'); loadUsers(); }
+            else toast('Lỗi', 'error');
+        };
+        window.toggleRole = async function (id, cur) {
+            const newRole = cur === 'admin' ? 'user' : 'admin';
+            if (!confirm(`Đổi role thành "${newRole}"?`)) return;
+            const r = await Admin.users.setRole(id, newRole);
+            if (r.ok) { toast(`Đã đổi role thành ${newRole}`, 'success'); loadUsers(); }
+            else toast('Lỗi', 'error');
+        };
+
+        // ── GAMES ──
+        let editGameId = null;
+        async function loadGames() { renderGameTable(allGames); }
+        function renderGameTable(games) {
+            document.getElementById('gameTable').innerHTML = games.length ? games.map(g => `
+      <tr><td>${g.id}</td><td style="font-weight:600">${g.name}</td><td>${g.mapId}</td>
+        <td><span class="badge badge-info">${g.gameType}</span></td>
+        <td>${g.orderIndex}</td>
+        <td>${g.isPremium ? '<span class="badge badge-gold">💎</span>' : '–'}</td>
+        <td><div class="action-cell">
+          <button class="btn btn-sm btn-secondary" onclick="editGame(${g.id})">✏️</button>
+          <button class="btn btn-sm btn-danger" onclick="deleteGame(${g.id})">🗑️</button>
+        </div></td>
+      </tr>`).join('') : '<tr><td colspan="7" style="text-align:center;padding:var(--sp-xl)">Chưa có game nào</td></tr>';
+        }
+        window.resetGameForm = function () { editGameId = null; document.getElementById('gameFormTitle').textContent = '➕ Thêm Game mới';['gName', 'gMapId', 'gFlow', 'gOrder'].forEach(i => document.getElementById(i).value = ''); document.getElementById('gOrder').value = '1'; document.getElementById('gPremium').checked = false; };
+        window.editGame = function (id) { const g = allGames.find(x => x.id === id); if (!g) return; editGameId = id; document.getElementById('gameFormTitle').textContent = `✏️ Sửa Game #${id}`; document.getElementById('gName').value = g.name || ''; document.getElementById('gMapId').value = g.mapId || ''; document.getElementById('gType').value = g.gameType || 'main'; document.getElementById('gOrder').value = g.orderIndex || 1; document.getElementById('gFlow').value = g.flow || ''; document.getElementById('gPremium').checked = g.isPremium || false; };
+        window.saveGame = async function () {
+            const dto = { name: document.getElementById('gName').value, mapId: parseInt(document.getElementById('gMapId').value), gameType: document.getElementById('gType').value, orderIndex: parseInt(document.getElementById('gOrder').value) || 1, flow: document.getElementById('gFlow').value || null, isPremium: document.getElementById('gPremium').checked };
+            if (!dto.name || !dto.mapId) { toast('Điền đầy đủ thông tin', 'warning'); return; }
+            const r = editGameId ? await Admin.games.update(editGameId, dto) : await Admin.games.create(dto);
+            if (r.ok) { toast(editGameId ? 'Đã cập nhật' : 'Đã tạo game', 'success'); const rAll = await Admin.games.getAll(); allGames = rAll.data || []; document.getElementById('stGames').textContent = allGames.length; renderGameTable(allGames); resetGameForm(); }
+            else toast(typeof r.data === 'string' ? r.data : 'Lỗi', 'error');
+        };
+        window.deleteGame = async function (id) { if (!confirm('Xóa game này?')) return; const r = await Admin.games.delete(id); if (r.ok) { toast('Đã xóa', 'success'); allGames = allGames.filter(g => g.id !== id); document.getElementById('stGames').textContent = allGames.length; renderGameTable(allGames); } else toast('Lỗi', 'error'); };
+
+        // ── GRAMMAR TOPICS ──
+        let editGrammarId = null;
+        function loadGrammar() { renderGrammarTable(allGrammar); }
+        function renderGrammarTable(topics) {
+            document.getElementById('grammarTable').innerHTML = topics.length ? topics.map(t => `
+      <tr><td>${t.id}</td><td style="font-family:monospace;font-size:0.82rem">${t.code || '–'}</td>
+        <td style="font-weight:600">${t.name}</td><td>${t.parentId || '–'}</td>
+        <td>${t.gradeMin || 1}–${t.gradeMax || 12}</td>
+        <td><span class="badge ${t.difficulty === 'easy' ? 'badge-success' : t.difficulty === 'hard' ? 'badge-danger' : 'badge-warning'}">${t.difficulty || 'medium'}</span></td>
+        <td><span class="badge ${t.isActive !== false ? 'badge-success' : 'badge-warning'}">${t.isActive !== false ? 'Active' : 'Off'}</span></td>
+        <td><div class="action-cell">
+          <button class="btn btn-sm btn-secondary" onclick="editGrammar(${t.id})">✏️</button>
+          <button class="btn btn-sm btn-danger" onclick="deleteGrammar(${t.id})">🗑️</button>
+        </div></td>
+      </tr>`).join('') : '<tr><td colspan="8" style="text-align:center;padding:var(--sp-xl)">Chưa có topic nào</td></tr>';
+        }
+        window.resetGrammarForm = function () { editGrammarId = null; document.getElementById('grammarFormTitle').textContent = '➕ Thêm Grammar Topic';['gtCode', 'gtName', 'gtParent', 'gtMin', 'gtMax', 'gtDesc', 'gtExample'].forEach(i => document.getElementById(i).value = ''); };
+        window.editGrammar = function (id) { const t = allGrammar.find(x => x.id === id); if (!t) return; editGrammarId = id; document.getElementById('grammarFormTitle').textContent = `✏️ Sửa Topic #${id}`; document.getElementById('gtCode').value = t.code || ''; document.getElementById('gtName').value = t.name || ''; document.getElementById('gtParent').value = t.parentId || ''; document.getElementById('gtMin').value = t.gradeMin || ''; document.getElementById('gtMax').value = t.gradeMax || ''; document.getElementById('gtDiff').value = t.difficulty || 'medium'; document.getElementById('gtDesc').value = t.description || ''; document.getElementById('gtExample').value = t.example || ''; };
+        window.saveGrammar = async function () {
+            const dto = { code: document.getElementById('gtCode').value.trim(), name: document.getElementById('gtName').value.trim(), parentId: parseInt(document.getElementById('gtParent').value) || null, gradeMin: parseInt(document.getElementById('gtMin').value) || null, gradeMax: parseInt(document.getElementById('gtMax').value) || null, difficulty: document.getElementById('gtDiff').value, description: document.getElementById('gtDesc').value || null, example: document.getElementById('gtExample').value || null, isActive: true };
+            if (!dto.code || !dto.name) { toast('Code và Tên là bắt buộc', 'warning'); return; }
+            const r = editGrammarId ? await Admin.grammarTopics.update(editGrammarId, dto) : await Admin.grammarTopics.create(dto);
+            if (r.ok) { toast(editGrammarId ? 'Đã cập nhật' : 'Đã tạo topic', 'success'); const rAll = await Admin.grammarTopics.getAll(); allGrammar = rAll.data || []; document.getElementById('stTopics').textContent = allGrammar.length; renderGrammarTable(allGrammar); resetGrammarForm(); }
+            else toast(typeof r.data === 'string' ? r.data : (r.data?.message || 'Lỗi'), 'error');
+        };
+        window.deleteGrammar = async function (id) { if (!confirm('Xóa topic này?')) return; const r = await Admin.grammarTopics.delete(id); if (r.ok) { toast('Đã xóa', 'success'); allGrammar = allGrammar.filter(t => t.id !== id); document.getElementById('stTopics').textContent = allGrammar.length; renderGrammarTable(allGrammar); } else toast(typeof r.data === 'string' ? r.data : 'Không thể xóa (đang được dùng)', 'error'); };
+
+        // ── QUESTIONS ──
+        let editQId = null;
+        function loadQuestions() { renderQuestionTable(allQuestions); }
+        function renderQuestionTable(qs) {
+            document.getElementById('questionTable').innerHTML = qs.length ? qs.map(q => `
+      <tr><td>${q.id}</td><td>${q.gameId}</td>
+        <td><span class="badge badge-info">${q.questionType || 'mc'}</span></td>
+        <td><span class="badge ${q.difficulty === 'easy' ? 'badge-success' : q.difficulty === 'hard' ? 'badge-danger' : 'badge-warning'}">${q.difficulty || 'medium'}</span></td>
+        <td><span class="badge ${q.isActive ? 'badge-success' : 'badge-warning'}">${q.isActive ? 'Active' : 'Off'}</span></td>
+        <td><div class="action-cell">
+          <button class="btn btn-sm btn-secondary" onclick="editQ(${q.id})">✏️</button>
+          <button class="btn btn-sm btn-danger" onclick="deleteQ(${q.id})">🗑️</button>
+        </div></td>
+      </tr>`).join('') : '<tr><td colspan="6" style="text-align:center;padding:var(--sp-xl)">Chưa có câu hỏi nào</td></tr>';
+        }
+        window.resetQForm = function () { editQId = null; document.getElementById('questionFormTitle').textContent = '➕ Thêm Câu Hỏi';['qGameId', 'qAnswer', 'qData', 'qImg', 'qExplain'].forEach(i => document.getElementById(i).value = ''); };
+        window.editQ = function (id) { const q = allQuestions.find(x => x.id === id); if (!q) return; editQId = id; document.getElementById('questionFormTitle').textContent = `✏️ Sửa Câu hỏi #${id}`; document.getElementById('qGameId').value = q.gameId || ''; document.getElementById('qType').value = q.questionType || 'mc'; document.getElementById('qDiff').value = q.difficulty || 'medium'; document.getElementById('qAnswer').value = q.answer || ''; document.getElementById('qData').value = typeof q.data === 'object' ? JSON.stringify(q.data, null, 2) : q.data || ''; document.getElementById('qImg').value = q.imageUrl || ''; document.getElementById('qExplain').value = q.explanation || ''; };
+        window.saveQuestion = async function () {
+            let dataVal = document.getElementById('qData').value.trim();
+            const dto = { gameId: parseInt(document.getElementById('qGameId').value), questionType: document.getElementById('qType').value, difficulty: document.getElementById('qDiff').value, answer: document.getElementById('qAnswer').value.trim(), data: dataVal, imageUrl: document.getElementById('qImg').value || null, explanation: document.getElementById('qExplain').value || null, isActive: true };
+            if (!dto.gameId || !dto.data) { toast('Game ID và dữ liệu câu hỏi là bắt buộc', 'warning'); return; }
+            const r = editQId ? await Admin.questions.update(editQId, dto) : await Admin.questions.create(dto);
+            if (r.ok) { toast(editQId ? 'Đã cập nhật' : 'Đã tạo câu hỏi', 'success'); const rAll = await Admin.questions.getAll(); allQuestions = rAll.data || []; document.getElementById('stQuestions').textContent = allQuestions.length; renderQuestionTable(allQuestions); resetQForm(); }
+            else toast(typeof r.data === 'string' ? r.data : 'Lỗi', 'error');
+        };
+        window.deleteQ = async function (id) { if (!confirm('Xóa câu hỏi này?')) return; const r = await Admin.questions.delete(id); if (r.ok) { toast('Đã xóa', 'success'); allQuestions = allQuestions.filter(q => q.id !== id); document.getElementById('stQuestions').textContent = allQuestions.length; renderQuestionTable(allQuestions); } else toast('Lỗi', 'error'); };
+
+        // ── STATS ──
+        let chartsRendered = false;
+        function loadStats() {
+            if (chartsRendered || !allUsers.length) return;
+            chartsRendered = true;
+            const chartOpts = { plugins: { legend: { labels: { color: '#9aa5be' } } }, scales: { x: { ticks: { color: '#9aa5be' }, grid: { color: 'rgba(255,255,255,0.05)' } }, y: { ticks: { color: '#9aa5be' }, grid: { color: 'rgba(255,255,255,0.05)' } } } };
+
+            // Grade distribution
+            const gradeCounts = {}; allUsers.forEach(u => { const g = u.grade || 0; gradeCounts[g] = (gradeCounts[g] || 0) + 1; });
+            new Chart(document.getElementById('gradeChart'), { type: 'bar', data: { labels: Object.keys(gradeCounts).map(g => g == 0 ? 'Không rõ' : `Lớp ${g}`), datasets: [{ label: 'Người dùng', data: Object.values(gradeCounts), backgroundColor: 'rgba(108,99,255,0.6)', borderColor: 'rgba(108,99,255,1)', borderWidth: 1 }] }, options: { ...chartOpts, responsive: true } });
+
+            // Region
+            const regionCounts = {}; allUsers.forEach(u => { const r = u.region || 'Không rõ'; regionCounts[r] = (regionCounts[r] || 0) + 1; });
+            new Chart(document.getElementById('regionChart'), { type: 'doughnut', data: { labels: Object.keys(regionCounts), datasets: [{ data: Object.values(regionCounts), backgroundColor: ['rgba(108,99,255,0.7)', 'rgba(0,212,255,0.7)', 'rgba(0,229,160,0.7)', 'rgba(255,107,157,0.7)'], borderWidth: 0 }] }, options: { plugins: { legend: { labels: { color: '#9aa5be' } } }, responsive: true } });
+
+            // Games by order
+            const topGames = allGames.slice(0, 8);
+            new Chart(document.getElementById('gameChart'), { type: 'bar', data: { labels: topGames.map(g => g.name.substring(0, 12)), datasets: [{ label: 'Games', data: topGames.map(() => Math.floor(Math.random() * 50 + 5)), backgroundColor: 'rgba(0,229,160,0.6)', borderColor: 'rgba(0,229,160,1)', borderWidth: 1 }] }, options: { ...chartOpts, responsive: true } });
+
+            // Accuracy by difficulty (mock)
+            new Chart(document.getElementById('diffChart'), { type: 'bar', data: { labels: ['Dễ', 'Trung bình', 'Khó'], datasets: [{ label: 'Độ chính xác TB %', data: [82, 64, 41], backgroundColor: ['rgba(0,229,160,0.6)', 'rgba(255,183,77,0.6)', 'rgba(255,82,82,0.6)'], borderWidth: 1 }] }, options: { ...chartOpts, responsive: true, scales: { ...chartOpts.scales, y: { ...chartOpts.scales.y, max: 100 } } } });
+        }
+    </script>
+</body>
+
+</html>

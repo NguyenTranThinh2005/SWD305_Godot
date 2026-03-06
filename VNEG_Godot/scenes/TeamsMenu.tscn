@@ -1,0 +1,95 @@
+[gd_scene load_steps=2 format=3 uid="uid://teamsmenu1234"]
+
+[ext_resource type="Script" path="res://scripts/ui/TeamsMenu.gd" id="1_teams"]
+
+[node name="TeamsMenu" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_teams")
+
+[node name="BackButton" type="Button" parent="."]
+layout_mode = 0
+offset_left = 20.0
+offset_top = 20.0
+offset_right = 120.0
+offset_bottom = 60.0
+text = "Quay lại"
+
+[node name="HBox" type="HBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 50.0
+offset_top = 80.0
+offset_right = -50.0
+offset_bottom = -50.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 50
+
+[node name="LeftPanel" type="VBoxContainer" parent="HBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="Label" type="Label" parent="HBox/LeftPanel"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 24
+text = "Nhóm của tôi"
+
+[node name="ScrollContainer" type="ScrollContainer" parent="HBox/LeftPanel"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="TeamList" type="VBoxContainer" parent="HBox/LeftPanel/ScrollContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="RightPanel" type="VBoxContainer" parent="HBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 30
+
+[node name="JoinBox" type="VBoxContainer" parent="HBox/RightPanel"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="HBox/RightPanel/JoinBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 20
+text = "Tham gia bằng Code"
+
+[node name="CodeInput" type="LineEdit" parent="HBox/RightPanel/JoinBox"]
+layout_mode = 2
+placeholder_text = "Nhập mã Mời"
+
+[node name="JoinButton" type="Button" parent="HBox/RightPanel/JoinBox"]
+layout_mode = 2
+text = "Tham Gia"
+
+[node name="CreateBox" type="VBoxContainer" parent="HBox/RightPanel"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="HBox/RightPanel/CreateBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 20
+text = "Tạo nhóm mới"
+
+[node name="NameInput" type="LineEdit" parent="HBox/RightPanel/CreateBox"]
+layout_mode = 2
+placeholder_text = "Tên nhóm"
+
+[node name="DescInput" type="LineEdit" parent="HBox/RightPanel/CreateBox"]
+layout_mode = 2
+placeholder_text = "Mô tả nhóm"
+
+[node name="CreateButton" type="Button" parent="HBox/RightPanel/CreateBox"]
+layout_mode = 2
+text = "Tạo Nhóm"
+
+[node name="StatusLabel" type="Label" parent="HBox/RightPanel"]
+layout_mode = 2

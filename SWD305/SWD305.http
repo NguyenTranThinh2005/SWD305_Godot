@@ -1,0 +1,113 @@
+@SWD305_HostAddress = http://localhost:5290
+@token = REPLACE_WITH_TOKEN
+@inviteCode = REPLACE_WITH_INVITE_CODE
+@userId = 1
+@mapId = 1
+@gameId = 1
+@gameSessionId = 1
+
+### Health/demo
+GET {{SWD305_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
+### USER REGISTER
+POST {{SWD305_HostAddress}}/api/users/register
+Content-Type: application/json
+
+{
+  "email": "demo1@example.com",
+  "password": "123456",
+  "phone": "0123456789",
+  "grade": 6,
+  "region": "VN"
+}
+
+###
+### USER LOGIN (copy token into X-Session-Token below)
+POST {{SWD305_HostAddress}}/api/users/login
+Content-Type: application/json
+
+{
+  "email": "demo1@example.com",
+  "password": "123456"
+}
+
+###
+### ME
+GET {{SWD305_HostAddress}}/api/users/me
+X-Session-Token: {{token}}
+
+###
+### CREATE TEAM
+POST {{SWD305_HostAddress}}/api/teams
+Content-Type: application/json
+X-Session-Token: {{token}}
+
+{
+  "name": "Demo Team",
+  "description": "Team for demo"
+}
+
+###
+### JOIN TEAM (use inviteCode from create team response)
+POST {{SWD305_HostAddress}}/api/teams/join
+Content-Type: application/json
+X-Session-Token: {{token}}
+
+{
+  "inviteCode": "{{inviteCode}}"
+}
+
+###
+### MY TEAMS
+GET {{SWD305_HostAddress}}/api/teams/me
+X-Session-Token: {{token}}
+
+###
+### LIST MAPS -> then pick mapId
+GET {{SWD305_HostAddress}}/api/maps
+Accept: application/json
+
+###
+### LIST GAMES BY MAP -> pick gameId
+GET {{SWD305_HostAddress}}/api/Game/by-map/{{mapId}}
+Accept: application/json
+
+###
+### START GAME -> returns sessionId (game session)
+POST {{SWD305_HostAddress}}/api/Game/start
+Content-Type: application/json
+
+{
+  "userId": {{userId}},
+  "gameId": {{gameId}}
+}
+
+###
+### GET QUESTIONS BY SESSION
+GET {{SWD305_HostAddress}}/api/Game/{{gameSessionId}}/questions
+Accept: application/json
+
+###
+### SUBMIT ANSWERS (SelectedAnswerId must match the answer "id" in question Data JSON)
+POST {{SWD305_HostAddress}}/api/Game/{{gameSessionId}}/submit
+Content-Type: application/json
+
+{
+  "answers": [
+    { "questionId": 1, "selectedAnswerId": 1 }
+  ]
+}
+
+###
+### GRAMMAR TOPICS
+GET {{SWD305_HostAddress}}/api/grammar/topics?grade=6
+Accept: application/json
+
+###
+### MY GRAMMAR PROGRESS (updated after submit if QuestionGrammar mappings exist)
+GET {{SWD305_HostAddress}}/api/grammar/progress/me
+X-Session-Token: {{token}}
+
+###

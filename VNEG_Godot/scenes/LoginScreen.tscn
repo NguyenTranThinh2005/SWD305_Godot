@@ -1,0 +1,152 @@
+[gd_scene load_steps=2 format=3 uid="uid://loginscreenuid1234"]
+
+[ext_resource type="Script" path="res://scripts/ui/LoginScreen.gd" id="1_loginscreen"]
+
+[node name="LoginScreen" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_loginscreen")
+
+[node name="CenterContainer" type="CenterContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="VBoxContainer" type="VBoxContainer" parent="CenterContainer"]
+custom_minimum_size = Vector2(350, 0)
+layout_mode = 2
+theme_override_constants/separation = 15
+
+[node name="Title" type="Label" parent="CenterContainer/VBoxContainer"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 32
+text = "VNEG System"
+horizontal_alignment = 1
+
+[node name="LoginBox" type="VBoxContainer" parent="CenterContainer/VBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="EmailInput" type="LineEdit" parent="CenterContainer/VBoxContainer/LoginBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+placeholder_text = "Email"
+
+[node name="PasswordInput" type="LineEdit" parent="CenterContainer/VBoxContainer/LoginBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+placeholder_text = "Mật khẩu"
+secret = true
+
+[node name="LoginButton" type="Button" parent="CenterContainer/VBoxContainer/LoginBox"]
+custom_minimum_size = Vector2(0, 45)
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = "Đăng nhập"
+
+[node name="ToRegisterButton" type="LinkButton" parent="CenterContainer/VBoxContainer/LoginBox"]
+layout_mode = 2
+size_flags_horizontal = 4
+text = "Chưa có tài khoản? Đăng ký ngay"
+
+[node name="RegisterBox" type="VBoxContainer" parent="CenterContainer/VBoxContainer"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="RegEmailInput" type="LineEdit" parent="CenterContainer/VBoxContainer/RegisterBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+placeholder_text = "Email đăng ký"
+
+[node name="RegPasswordInput" type="LineEdit" parent="CenterContainer/VBoxContainer/RegisterBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+placeholder_text = "Mật khẩu"
+secret = true
+
+[node name="PhoneInput" type="LineEdit" parent="CenterContainer/VBoxContainer/RegisterBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+placeholder_text = "Số điện thoại"
+
+[node name="HBoxGrade" type="HBoxContainer" parent="CenterContainer/VBoxContainer/RegisterBox"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="CenterContainer/VBoxContainer/RegisterBox/HBoxGrade"]
+layout_mode = 2
+text = "Khối lớp: "
+
+[node name="GradeInput" type="OptionButton" parent="CenterContainer/VBoxContainer/RegisterBox/HBoxGrade"]
+layout_mode = 2
+size_flags_horizontal = 3
+selected = 0
+item_count = 12
+popup/item_0/text = "Lớp 1"
+popup/item_1/text = "Lớp 2"
+popup/item_1/id = 1
+popup/item_2/text = "Lớp 3"
+popup/item_2/id = 2
+popup/item_3/text = "Lớp 4"
+popup/item_3/id = 3
+popup/item_4/text = "Lớp 5"
+popup/item_4/id = 4
+popup/item_5/text = "Lớp 6"
+popup/item_5/id = 5
+popup/item_6/text = "Lớp 7"
+popup/item_6/id = 6
+popup/item_7/text = "Lớp 8"
+popup/item_7/id = 7
+popup/item_8/text = "Lớp 9"
+popup/item_8/id = 8
+popup/item_9/text = "Lớp 10"
+popup/item_9/id = 9
+popup/item_10/text = "Lớp 11"
+popup/item_10/id = 10
+popup/item_11/text = "Lớp 12"
+popup/item_11/id = 11
+
+[node name="HBoxRegion" type="HBoxContainer" parent="CenterContainer/VBoxContainer/RegisterBox"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="CenterContainer/VBoxContainer/RegisterBox/HBoxRegion"]
+layout_mode = 2
+text = "Vùng miền: "
+
+[node name="RegionInput" type="OptionButton" parent="CenterContainer/VBoxContainer/RegisterBox/HBoxRegion"]
+layout_mode = 2
+size_flags_horizontal = 3
+selected = 0
+item_count = 3
+popup/item_0/text = "Miền Bắc"
+popup/item_1/text = "Miền Trung"
+popup/item_1/id = 1
+popup/item_2/text = "Miền Nam"
+popup/item_2/id = 2
+
+[node name="SubmitRegisterButton" type="Button" parent="CenterContainer/VBoxContainer/RegisterBox"]
+custom_minimum_size = Vector2(0, 45)
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = "Xác nhận Đăng ký"
+
+[node name="ToLoginButton" type="LinkButton" parent="CenterContainer/VBoxContainer/RegisterBox"]
+layout_mode = 2
+size_flags_horizontal = 4
+text = "Đã có tài khoản? Đăng nhập"
+
+[node name="StatusLabel" type="Label" parent="CenterContainer/VBoxContainer"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 16
+horizontal_alignment = 1
+autowrap_mode = 2

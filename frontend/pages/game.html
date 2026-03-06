@@ -1,0 +1,675 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VNEG – Antigravity World</title>
+    <link rel="stylesheet" href="../style.css">
+    <style>
+        body {
+            background: var(--c-bg);
+            overflow: hidden;
+            user-select: none;
+        }
+
+        .game-layout {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+        }
+
+        /* HUD */
+        .hud {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: var(--sp-md) var(--sp-xl);
+            background: rgba(8, 11, 20, 0.9);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--c-border);
+            flex-shrink: 0;
+        }
+
+        .hud-left,
+        .hud-right {
+            display: flex;
+            align-items: center;
+            gap: var(--sp-lg);
+        }
+
+        .hud-stat {
+            display: flex;
+            align-items: center;
+            gap: var(--sp-sm);
+            font-weight: 700;
+        }
+
+        .hud-stat .lbl {
+            font-size: 0.72rem;
+            color: var(--c-text-2);
+            font-weight: 400;
+        }
+
+        .timer {
+            font-size: 1.4rem;
+            font-weight: 900;
+            color: var(--c-secondary);
+            text-shadow: var(--glow-blue);
+        }
+
+        .timer.urgent {
+            color: var(--c-danger);
+            animation: pulseGlow 0.5s ease-in-out infinite;
+        }
+
+        .phase-dots {
+            display: flex;
+            gap: 6px;
+        }
+
+        .pdot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--c-border);
+            transition: all var(--t-med);
+        }
+
+        .pdot.active {
+            background: var(--c-primary);
+            box-shadow: var(--glow-primary);
+        }
+
+        .pdot.done {
+            background: var(--c-success);
+        }
+
+        .exit-btn {
+            color: var(--c-text-2);
+            text-decoration: none;
+            font-size: 1.2rem;
+            padding: 6px 10px;
+            border-radius: var(--r-sm);
+            transition: all var(--t-fast);
+        }
+
+        .exit-btn:hover {
+            background: var(--c-surface);
+            color: var(--c-text);
+        }
+
+        /* World */
+        .game-world {
+            flex: 1;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .world-bg {
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(ellipse at 25% 35%, rgba(108, 99, 255, 0.2) 0%, transparent 55%),
+                radial-gradient(ellipse at 75% 65%, rgba(0, 212, 255, 0.12) 0%, transparent 50%);
+            transition: transform 800ms cubic-bezier(0.4, 0, 0.2, 1), filter 800ms;
+        }
+
+        .world-bg.flipped {
+            transform: scaleY(-1) rotate(180deg);
+            filter: hue-rotate(180deg);
+        }
+
+        .platform {
+            position: absolute;
+            border-radius: var(--r-sm);
+            animation: float var(--pf, 3s) ease-in-out infinite;
+            animation-delay: var(--pd, 0s);
+        }
+
+        .game-char {
+            position: absolute;
+            left: 12%;
+            font-size: 3rem;
+            z-index: 10;
+            transition: bottom 600ms cubic-bezier(0.4, 0, 0.2, 1), top 600ms, transform 800ms;
+        }
+
+        .game-char.normal {
+            bottom: 30%;
+            top: auto;
+        }
+
+        .game-char.flipped {
+            top: 18%;
+            bottom: auto;
+            transform: scaleY(-1);
+        }
+
+        .gravity-ind {
+            position: absolute;
+            right: var(--sp-xl);
+            top: 50%;
+            transform: translateY(-50%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            z-index: 20;
+        }
+
+        .g-arrow {
+            font-size: 2rem;
+            transition: transform 800ms cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .g-arrow.flipped {
+            transform: rotate(180deg);
+        }
+
+        .g-label {
+            font-size: 0.65rem;
+            color: var(--c-text-3);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .feedback-flash {
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            z-index: 30;
+            opacity: 0;
+            transition: opacity 200ms;
+        }
+
+        .ff-correct {
+            opacity: 1;
+            background: radial-gradient(circle at center, rgba(0, 229, 160, 0.28) 0%, transparent 70%);
+        }
+
+        .ff-wrong {
+            opacity: 1;
+            background: radial-gradient(circle at center, rgba(255, 82, 82, 0.28) 0%, transparent 70%);
+        }
+
+        .reward-float {
+            position: absolute;
+            pointer-events: none;
+            z-index: 40;
+            font-size: 1.3rem;
+            font-weight: 800;
+            animation: rewardUp 1000ms ease forwards;
+        }
+
+        @keyframes rewardUp {
+            0% {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+
+            100% {
+                opacity: 0;
+                transform: translateY(-80px) scale(1.4);
+            }
+        }
+
+        /* Question area */
+        .q-area {
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100%;
+            max-width: 700px;
+            padding: var(--sp-lg);
+            z-index: 20;
+        }
+
+        .phase-label {
+            display: inline-flex;
+            align-items: center;
+            gap: var(--sp-sm);
+            padding: 4px 14px;
+            border-radius: var(--r-full);
+            font-size: 0.78rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            margin-bottom: var(--sp-md);
+        }
+
+        .q-progress {
+            height: 4px;
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: var(--r-full);
+            margin-bottom: var(--sp-sm);
+            overflow: hidden;
+        }
+
+        .q-fill {
+            height: 100%;
+            background: var(--g-primary);
+            border-radius: var(--r-full);
+            transition: width 300ms;
+        }
+
+        .q-card {
+            background: rgba(13, 18, 32, 0.92);
+            border: 1px solid var(--c-border-2);
+            border-radius: var(--r-xl);
+            padding: var(--sp-xl);
+            backdrop-filter: blur(24px);
+            box-shadow: 0 -20px 60px rgba(0, 0, 0, 0.5);
+        }
+
+        .q-meta {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: var(--sp-sm);
+        }
+
+        .q-num {
+            font-size: 0.8rem;
+            color: var(--c-text-2);
+        }
+
+        .q-text {
+            font-size: 1.15rem;
+            font-weight: 600;
+            line-height: 1.55;
+            margin-bottom: var(--sp-lg);
+        }
+
+        .choices {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: var(--sp-md);
+        }
+
+        .choice {
+            padding: var(--sp-md);
+            background: var(--c-surface);
+            border: 2px solid var(--c-border);
+            border-radius: var(--r-lg);
+            color: var(--c-text);
+            font-family: var(--font-main);
+            font-size: 0.92rem;
+            font-weight: 500;
+            cursor: pointer;
+            text-align: left;
+            display: flex;
+            align-items: center;
+            gap: var(--sp-sm);
+            transition: all var(--t-fast);
+        }
+
+        .choice:hover:not(:disabled) {
+            background: rgba(108, 99, 255, 0.15);
+            border-color: var(--c-primary);
+            transform: translateY(-2px);
+        }
+
+        .choice.correct {
+            background: rgba(0, 229, 160, 0.2) !important;
+            border-color: var(--c-success) !important;
+            color: var(--c-success) !important;
+        }
+
+        .choice.wrong {
+            background: rgba(255, 82, 82, 0.2) !important;
+            border-color: var(--c-danger) !important;
+            color: var(--c-danger) !important;
+        }
+
+        .choice:disabled {
+            cursor: not-allowed;
+        }
+
+        .cletter {
+            width: 26px;
+            height: 26px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.08);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.78rem;
+            font-weight: 700;
+            flex-shrink: 0;
+        }
+
+        /* Screens */
+        .screen {
+            position: absolute;
+            inset: 0;
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(8, 11, 20, 0.94);
+            backdrop-filter: blur(20px);
+        }
+
+        .sc-box {
+            text-align: center;
+            max-width: 520px;
+            padding: var(--sp-xl);
+            animation: bounceIn 600ms;
+        }
+
+        .sc-icon {
+            font-size: 5rem;
+            margin-bottom: var(--sp-lg);
+        }
+
+        .sc-title {
+            font-size: 2rem;
+            font-weight: 900;
+            margin-bottom: var(--sp-md);
+        }
+
+        .sc-sub {
+            color: var(--c-text-2);
+            margin-bottom: var(--sp-xl);
+        }
+
+        .r-stars {
+            display: flex;
+            justify-content: center;
+            gap: var(--sp-md);
+            font-size: 2.4rem;
+            margin: var(--sp-lg) 0;
+        }
+
+        .r-stats {
+            background: var(--c-surface);
+            border-radius: var(--r-lg);
+            padding: 0 var(--sp-lg);
+            margin-bottom: var(--sp-xl);
+        }
+
+        .r-row {
+            display: flex;
+            justify-content: space-between;
+            padding: var(--sp-md) 0;
+            border-bottom: 1px solid var(--c-border);
+        }
+
+        .r-row:last-child {
+            border-bottom: none;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="starfield"></div>
+    <div class="game-layout page-content">
+
+        <div class="hud">
+            <div class="hud-left">
+                <a class="exit-btn" href="world-map.html" title="Thoát">✕</a>
+                <div>
+                    <div style="font-size:0.75rem;color:var(--c-text-2)">🎮 Đang chơi</div>
+                    <div style="font-size:0.95rem;font-weight:800" id="hudName">–</div>
+                </div>
+                <div class="phase-dots" id="phaseDots">
+                    <div class="pdot" title="Intro"></div>
+                    <div class="pdot" title="Practice"></div>
+                    <div class="pdot" title="Challenge"></div>
+                    <div class="pdot" title="Boss"></div>
+                </div>
+            </div>
+            <div style="text-align:center">
+                <div class="timer" id="timer">00:00</div>
+                <div style="font-size:0.72rem;color:var(--c-text-2)">Thời gian</div>
+            </div>
+            <div class="hud-right">
+                <div class="hud-stat">⭐ <span id="hudStars">0</span><span class="lbl">Sao</span></div>
+                <div class="hud-stat">🪙 <span id="hudCoins">0</span><span class="lbl">Coin</span></div>
+                <div class="hud-stat" id="hudHP">❤️❤️❤️</div>
+            </div>
+        </div>
+
+        <div class="game-world">
+            <div class="world-bg" id="worldBg" id="bg"></div>
+            <div id="platforms"></div>
+            <div class="game-char normal" id="char">🐉</div>
+            <div class="gravity-ind">
+                <div class="g-arrow" id="garrow">⬇️</div>
+                <div class="g-label">Trọng lực</div>
+            </div>
+            <div class="feedback-flash" id="flash"></div>
+
+            <div class="q-area" id="qArea">
+                <div id="phLabel"></div>
+                <div class="q-progress">
+                    <div class="q-fill" id="qfill" style="width:0%"></div>
+                </div>
+                <div class="q-card" id="qCard">
+                    <div class="loading-screen" style="min-height:100px">
+                        <div class="spinner"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Intro Screen -->
+            <div class="screen" id="introScreen">
+                <div class="sc-box">
+                    <div class="sc-icon floating">🌌</div>
+                    <h1 class="sc-title text-gradient" id="introName">Antigravity World</h1>
+                    <p class="sc-sub">Trả lời đúng → đảo chiều trọng lực → mở đường đi mới!<br>Trả lời sai → mất HP 💔
+                    </p>
+                    <button class="btn btn-primary btn-xl" id="introBtn" onclick="beginGame()" disabled>⏳ Đang
+                        tải…</button>
+                </div>
+            </div>
+
+            <!-- Result Screen -->
+            <div class="screen hidden" id="resultScreen">
+                <div class="sc-box" style="max-width:560px">
+                    <div class="sc-icon" id="rIcon">🎉</div>
+                    <h1 class="sc-title" id="rTitle">Hoàn thành!</h1>
+                    <p class="sc-sub" id="rSub"></p>
+                    <div class="r-stars" id="rStars"></div>
+                    <div class="r-stats" id="rStats"></div>
+                    <div style="display:flex;gap:var(--sp-md);justify-content:center;margin-top:var(--sp-lg)">
+                        <a class="btn btn-secondary btn-lg" href="world-map.html">🗺️ Bản đồ</a>
+                        <button class="btn btn-primary btn-lg" onclick="location.reload()">🔄 Chơi lại</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="toast-container"></div>
+
+    <script type="module">
+        import { Games } from '../api.js';
+        import { requireAuth } from '../js/auth.js';
+
+        const user = requireAuth(); if (!user) throw new Error('auth');
+        const params = new URLSearchParams(location.search);
+        const gameId = parseInt(params.get('gameId'));
+        const gameName = decodeURIComponent(params.get('name') || 'Bài học');
+
+        document.getElementById('hudName').textContent = gameName;
+        document.getElementById('introName').textContent = gameName;
+        document.getElementById('char').textContent = user.avatarUrl || '🐉';
+
+        // Platforms
+        const pColors = ['rgba(108,99,255,0.15)', 'rgba(0,212,255,0.1)', 'rgba(0,229,160,0.1)', 'rgba(255,107,157,0.1)'];
+        const pf = document.getElementById('platforms');
+        for (let i = 0; i < 8; i++) {
+            const el = document.createElement('div');
+            el.className = 'platform';
+            el.style.cssText = `left:${Math.random() * 85}%;bottom:${15 + Math.random() * 60}%;width:${80 + Math.random() * 140}px;height:${12 + Math.random() * 8}px;background:${pColors[i % 4]};border:1px solid rgba(255,255,255,0.08);--pf:${(3 + Math.random() * 3).toFixed(1)}s;--pd:${(Math.random() * 2).toFixed(1)}s`;
+            pf.appendChild(el);
+        }
+
+        let sessionId, questions = [], answers = [], hp = 3, coins = 0, stars = 0;
+        let gravFlipped = false, timerSec = 0, timerInt = null;
+        let phaseList = ['practice', 'challenge', 'boss'], phIdx = 0;
+        let phQs = [], phQIdx = 0;
+
+        const phCfg = {
+            practice: { label: '📝 Practice', color: 'rgba(108,99,255,0.15)', cColor: 'var(--c-primary)' },
+            challenge: { label: '⚡ Challenge', color: 'rgba(255,183,77,0.15)', cColor: 'var(--c-warning)' },
+            boss: { label: '👹 Boss Quiz', color: 'rgba(255,82,82,0.15)', cColor: 'var(--c-danger)' },
+        };
+
+        async function init() {
+            if (!gameId) { document.getElementById('introBtn').textContent = '⚠️ Thiếu Game ID'; return; }
+            const r1 = await Games.start(user.id, gameId);
+            if (!r1.ok) { document.getElementById('introBtn').textContent = '⚠️ Không bắt đầu được'; return; }
+            sessionId = r1.data.sessionId;
+            const r2 = await Games.getQuestions(sessionId);
+            if (!r2.ok || !r2.data?.length) { document.getElementById('introBtn').textContent = '⚠️ Không có câu hỏi'; return; }
+            questions = r2.data.sort(() => Math.random() - 0.5);
+            document.getElementById('introBtn').disabled = false;
+            document.getElementById('introBtn').innerHTML = '🚀 Bắt đầu!';
+        }
+
+        window.beginGame = function () {
+            document.getElementById('introScreen').classList.add('hidden');
+            startTimer();
+            loadPhase(0);
+        };
+
+        function startTimer() {
+            timerInt = setInterval(() => {
+                timerSec++;
+                const el = document.getElementById('timer');
+                el.textContent = `${String(Math.floor(timerSec / 60)).padStart(2, '0')}:${String(timerSec % 60).padStart(2, '0')}`;
+                if (timerSec >= 120) el.classList.add('urgent');
+            }, 1000);
+        }
+
+        function loadPhase(idx) {
+            if (idx >= phaseList.length) { showResults(); return; }
+            phIdx = idx;
+            const ph = phaseList[idx];
+            const count = idx === 2 ? 4 : 3;
+            const start = idx * 3;
+            phQs = questions.slice(start, start + count).length ? questions.slice(start, start + count) : questions.slice(0, count);
+            phQIdx = 0;
+            updateDots();
+            showQ();
+        }
+
+        function updateDots() {
+            const dots = document.querySelectorAll('.pdot');
+            [0, 1, 2].forEach((i, _) => {
+                dots[i + 1].className = 'pdot' + (i === phIdx ? ' active' : i < phIdx ? ' done' : '');
+            });
+        }
+
+        function showQ() {
+            if (phQIdx >= phQs.length) { setTimeout(() => loadPhase(phIdx + 1), 500); return; }
+            const ph = phaseList[phIdx], q = phQs[phQIdx], cfg = phCfg[ph];
+            const pct = phQs.length ? (phQIdx / phQs.length) * 100 : 0;
+            document.getElementById('qfill').style.width = pct + '%';
+            document.getElementById('phLabel').innerHTML = `<div class="phase-label" style="background:${cfg.color};color:${cfg.cColor};border:1px solid ${cfg.cColor}40;margin-bottom:var(--sp-md)">${cfg.label}</div>`;
+
+            let qData; try { qData = typeof q.data === 'string' ? JSON.parse(q.data) : q.data; } catch { qData = { text: q.data, choices: [] }; }
+            const qText = qData.text || qData.question || (typeof qData === 'string' ? qData : 'Câu hỏi');
+            const choices = qData.choices || qData.options || [];
+            const letters = ['A', 'B', 'C', 'D'];
+
+            document.getElementById('qCard').innerHTML = `
+      <div class="q-meta"><span class="q-num">Câu ${phQIdx + 1}/${phQs.length}</span></div>
+      <div class="q-text">${qText}</div>
+      ${choices.length ? `<div class="choices">${choices.map((c, i) => `
+        <button class="choice" onclick="pick(${q.id},${i},this)" data-ans="${q.answer}">
+          <span class="cletter">${letters[i]}</span>
+          <span>${typeof c === 'object' ? c.text || c.label || c : c}</span>
+        </button>`).join('')}</div>` :
+                    `<input id="fill" class="form-control" placeholder="Nhập câu trả lời..." style="margin-top:var(--sp-md)">
+       <button class="btn btn-primary mt-md" onclick="submitFill(${q.id})">Xác nhận →</button>`}`;
+        }
+
+        window.pick = function (qId, sel, btn) {
+            btn.closest('.choices').querySelectorAll('.choice').forEach(b => b.disabled = true);
+            const correct = parseInt(btn.dataset.ans) || 0;
+            const ok = sel === correct;
+            answers.push({ questionId: qId, selectedAnswerId: sel });
+            btn.classList.add(ok ? 'correct' : 'wrong');
+            if (!ok) { const bs = btn.closest('.choices').querySelectorAll('.choice'); if (bs[correct]) bs[correct].classList.add('correct'); }
+            ok ? onCorrect() : onWrong();
+            setTimeout(() => { phQIdx++; showQ(); }, 1200);
+        };
+
+        window.submitFill = function (qId) {
+            answers.push({ questionId: qId, selectedAnswerId: 0 });
+            phQIdx++; showQ();
+        };
+
+        function onCorrect() {
+            coins += 5; stars = Math.min(stars + 1, 3);
+            document.getElementById('hudCoins').textContent = coins;
+            document.getElementById('hudStars').textContent = stars;
+            gravFlipped = !gravFlipped;
+            document.getElementById('worldBg').classList.toggle('flipped', gravFlipped);
+            document.getElementById('char').className = 'game-char ' + (gravFlipped ? 'flipped' : 'normal');
+            document.getElementById('garrow').className = 'g-arrow' + (gravFlipped ? ' flipped' : '');
+            flash('ff-correct'); spawnReward('+5🪙', '#ffd700');
+        }
+
+        function onWrong() {
+            hp = Math.max(0, hp - 1);
+            document.getElementById('hudHP').textContent = '❤️'.repeat(hp) || (hp === 0 ? '💀' : '');
+            flash('ff-wrong');
+            if (hp === 0) setTimeout(showResults, 800);
+        }
+
+        function flash(cls) {
+            const el = document.getElementById('flash');
+            el.className = 'feedback-flash ' + cls;
+            setTimeout(() => el.className = 'feedback-flash', 600);
+        }
+
+        function spawnReward(txt, col) {
+            const el = document.createElement('div');
+            el.className = 'reward-float';
+            el.textContent = txt;
+            el.style.cssText = `color:${col};left:${10 + Math.random() * 25}%;bottom:40%`;
+            document.getElementById('game-world') || document.querySelector('.game-world').appendChild(el);
+            setTimeout(() => el.remove(), 1100);
+        }
+
+        async function showResults() {
+            clearInterval(timerInt);
+            let api = null;
+            if (sessionId && answers.length) {
+                const r = await Games.submit(sessionId, answers);
+                if (r.ok) api = r.data;
+            }
+            const score = api?.score ?? (answers.length * 10);
+            const acc = api?.accuracy ?? 0;
+            const fStars = api?.stars ?? stars;
+            const fCoins = api?.coins ?? coins;
+
+            const sessions = JSON.parse(localStorage.getItem('vneg_sessions') || '[]');
+            sessions.push({ gameId, score, accuracy: acc, stars: fStars, coins: fCoins, completedAt: new Date().toISOString() });
+            localStorage.setItem('vneg_sessions', JSON.stringify(sessions));
+
+            const tk = 'vneg_tasks_' + new Date().toDateString();
+            const done = JSON.parse(localStorage.getItem(tk) || '["task_login"]');
+            if (!done.includes('task_lesson')) done.push('task_lesson');
+            localStorage.setItem(tk, JSON.stringify(done));
+
+            document.getElementById('resultScreen').classList.remove('hidden');
+            document.getElementById('rIcon').textContent = fStars >= 3 ? '🏆' : fStars >= 2 ? '🎉' : '✅';
+            document.getElementById('rTitle').textContent = fStars >= 3 ? 'Xuất sắc!' : fStars >= 2 ? 'Tốt lắm!' : 'Hoàn thành!';
+            document.getElementById('rSub').textContent = `${Math.floor(timerSec / 60)}:${String(timerSec % 60).padStart(2, '0')} · ${answers.length} câu`;
+            document.getElementById('rStars').innerHTML = [1, 2, 3].map(i => `<span style="font-size:2.4rem">${i <= fStars ? '⭐' : '☆'}</span>`).join('');
+            document.getElementById('rStats').innerHTML = `
+      <div class="r-row"><span>🎯 Độ chính xác</span><strong>${Math.round(acc)}%</strong></div>
+      <div class="r-row"><span>🏆 Điểm số</span><strong>${score}</strong></div>
+      <div class="r-row"><span>🪙 Coin kiếm được</span><strong>${fCoins}</strong></div>
+      <div class="r-row"><span>❤️ HP còn lại</span><strong>${hp}/3</strong></div>`;
+        }
+
+        init();
+    </script>
+</body>
+
+</html>

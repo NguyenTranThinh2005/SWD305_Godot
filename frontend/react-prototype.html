@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tiếng Việt Quest</title>
+
+    <!-- Tailwind CSS cho tiện lợi -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- React & ReactDOM -->
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+
+    <!-- Babel để dịch JSX ở client -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+    <style>
+        body {
+            margin: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            color: white;
+            min-height: 100vh;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="root"></div>
+
+    <!-- Bắt đầu viết React / JSX -->
+    <script type="text/babel">
+        const { useState, useEffect, useCallback, useMemo } = React;
+
+        // ═══════════════════════════════════════════════════════════════
+        // DATABASE - Giáo án Ngữ Pháp Tiếng Việt
+        // ═══════════════════════════════════════════════════════════════
+        const GRAMMAR_CONCEPTS = {
+            "thu_cong_hu_tu": {
+                title: "Thực từ và Hư từ",
+                description: "Thực từ là từ có nghĩa cụ thể (danh từ, động từ, tính từ). Hư từ là từ không có nghĩa cụ thể, dùng để nối hoặc biến đổi ý nghĩa (介词, 助词, 连词).",
+            },
+            "cau_khẳng_phu": {
+                title: "Câu khẳng định và Phủ định",
+                description: "Câu khẳng định thể hiện ý nghĩa đồng ý hoặc xác nhận. Câu phủ định dùng từ 'không', 'chưa', 'chẳng' để phủ nhận.",
+            },
+            "dau_cau": {
+                title: "Dấu câu",
+                description: "Dấu câu gồm: dấu chấm (.), dấu phẩy (,), dấu chấm hỏi (?), dấu chấm than (!). Mỗi loại có quy tắc sử dụng riêng.",
+            },
+            "tu_lai_ghep": {
+                title: "Từ láy và Từ ghép",
+                description: "Từ láy: các âm phần lặp lại (VD: lung lay). Từ ghép: ghép các từ đơn có nghĩa (VD: cây cối).",
+            },
+            "cau_don_cau_phuc": {
+                title: "Câu đơn và Câu phức",
+                description: "Câu đơn có 1 vế. Câu phức có nhiều vế nối bằng từ nối (và, nhưng, vì, nên...).",
+            },
+        };
+
+        const DATABASE = {
+            soCapLevel: {
+                title: "🌱 SƠ CẤP",
+                color: "#4ade80",
+                colorDark: "#16a34a",
+                icon: "🌿",
+                chapters: [
+                    {
+                        id: "sc_ch1",
+                        title: "Chương 1: Thực từ & Hư từ",
+                        conceptKey: "thu_cong_hu_tu",
+                        stages: {
+                            nguPháp: [
+                                { question: "Từ nào dưới đây là thực từ?", options: ["nó", "đang", "cây cối", "với"], correctIndices: [2], type: "multi" },
+                                { question: "Từ nào là hư từ?", options: ["nhà", "và", "xe", "sông"], correctIndices: [1], type: "multi" },
+                                { question: "Chọn các thực từ trong danh sách sau:", options: ["của", "cái", "bảo", "cái xe"], correctIndices: [3], type: "multi" },
+                                { question: "Từ nào dưới đây là hư từ?", options: ["núi", "rừng", "để", "cây"], correctIndices: [2], type: "multi" },
+                                { question: "Chọn các hư từ:", options: ["baba", "mẹ", "với", "ba"], correctIndices: [2], type: "multi" },
+                            ],
+                            chinhTa: [
+                                { question: "Chính tả đúng của từ nào?", options: ["lún tún", "lúng tún", "lúng túng", "lún túm"], correctIndex: 2 },
+                                { question: "Từ nào đúng chính tả?", options: ["sao sánh", "so sánh", "sao sanh", "sao sãnh"], correctIndex: 1 },
+                            ],
+                            nhinTranh: [
+                                { question: "Nhìn tranh, đoán thành ngữ và cho biết hư từ là?", image: "🌳🌳🌳", imageDesc: "Ba cây cùng nhau lớn lên", options: ["nên", "rừng", "núi", "chặt"], correctIndex: 0, thanGu: "Một cây làm chẳng nên non, ba cây chụm lại nên hòn núi cao" },
+                            ],
+                            xepCau: [
+                                { question: "Xếp câu đúng:", scramble: ["tôi", "muốn", "ăn", "cơm", "cùng", "bạn"], options: ["Tôi muốn ăn cơm cùng bạn.", "Bạn cùng tôi muốn ăn cơm.", "Ăn cơm tôi muốn cùng bạn.", "Cùng bạn ăn cơm tôi muốn."], correctIndex: 0 },
+                            ],
+                            vuongMien: [
+                                { question: "Miền Nam dùng 'Đi đâu đi' thay bằng?", options: ["Đi đâu vậy", "Đi đâu rồi", "Đi đâu không", "Đi đâu hả"], correctIndex: 0 },
+                            ],
+                        },
+                    },
+                    {
+                        id: "sc_ch2",
+                        title: "Chương 2: Câu Khẳng định & Phủ định",
+                        conceptKey: "cau_khẳng_phu",
+                        stages: {
+                            nguPháp: [
+                                { question: "Câu nào là câu khẳng định?", options: ["Tôi không đi.", "Anh ấy chưa đến.", "Em đã ăn rồi.", "Cô ấy chẳng muốn."], correctIndices: [2], type: "multi" },
+                                { question: "Chọn câu phủ định:", options: ["Bé đang chơi.", "Mẹ đang nấu.", "Anh chưa đến.", "Bé ngoan lắm."], correctIndices: [2], type: "multi" },
+                            ]
+                        }
+                    }
+                ],
+            },
+            trungCapLevel: {
+                title: "📚 TRUNG CẤP",
+                color: "#60a5fa",
+                colorDark: "#2563eb",
+                icon: "📖",
+                chapters: [
+                    {
+                        id: "tc_ch1",
+                        title: "Chương 1: Câu Đơn & Câu Phức",
+                        conceptKey: "cau_don_cau_phuc",
+                        stages: {
+                            nguPháp: [
+                                { question: "Câu đơn là câu?", options: ["Có nhiều vế", "Có 1 vế", "Không có chủ ngữ", "Không có tuyên đề"], correctIndices: [1], type: "multi" },
+                                { question: "Câu nào là câu phức?", options: ["Tôi ăn cơm.", "Tôi ăn cơm và uống nước.", "Bé ngoan.", "Mẹ về."], correctIndices: [1], type: "multi" },
+                            ]
+                        }
+                    }
+                ]
+            },
+            caoCapLevel: {
+                title: "🏆 CAO CẤP",
+                color: "#f59e0b",
+                colorDark: "#d97706",
+                icon: "⭐",
+                chapters: [
+                    {
+                        id: "cc_ch1",
+                        title: "Chương 1: Dấu Câu Nâng Cao",
+                        conceptKey: "dau_cau",
+                        stages: {
+                            nguPháp: [
+                                { question: "Dấu chấm (.) dùng ở đâu?", options: ["Cuối câu tuyên bố", "Cuối câu hỏi", "Cuối câu cảm thấy", "Giữa câu"], correctIndices: [0], type: "multi" },
+                            ]
+                        }
+                    }
+                ]
+            }
+        };
+
+        // ═══════════════════════════════════════════════════════════════
+        // CONSTANTS
+        // ═══════════════════════════════════════════════════════════════
+        const STAGE_KEYS = ["nguPháp", "chinhTa", "nhinTranh", "xepCau", "vuongMien", "onTap"];
+        const STAGE_NAMES = {
+            nguPháp: "📖 Ngữ Pháp",
+            chinhTa: "✍️ Chính Tả",
+            nhinTranh: "🖼️ Nhìn Tranh",
+            xepCau: "🔀 Xếp Câu",
+            vuongMien: "🗺️ Vùng Miền",
+            onTap: "🎯 Ôn Tập",
+        };
+        const STAGE_COLORS = {
+            nguPháp: "#8b5cf6",
+            chinhTa: "#ec4899",
+            nhinTranh: "#f59e0b",
+            xepCau: "#10b981",
+            vuongMien: "#3b82f6",
+            onTap: "#ef4444",
+        };
+
+        function generateOnTapQuestions(chapter) {
+            const stages = chapter.stages;
+            let onTap = [];
+            ["nguPháp", "chinhTa", "nhinTranh", "xepCau", "vuongMien"].forEach((key) => {
+                if (stages[key]) {
+                    const picked = stages[key].slice(0, 2);
+                    picked.forEach((q) => onTap.push({ ...q, fromStage: key }));
+                }
+            });
+            return onTap;
+        }
+
+        // ═══════════════════════════════════════════════════════════════
+        // MAIN APP
+        // ═══════════════════════════════════════════════════════════════
+        function App() {
+            const [view, setView] = useState("home");
+            const [selectedMap, setSelectedMap] = useState(null);
+            const [selectedChapter, setSelectedChapter] = useState(null);
+            const [selectedStage, setSelectedStage] = useState(null);
+            const [questions, setQuestions] = useState([]);
+            const [currentQ, setCurrentQ] = useState(0);
+            const [selectedAnswers, setSelectedAnswers] = useState([]);
+            const [answered, setAnswered] = useState(false);
+            const [score, setScore] = useState(0);
+            const [results, setResults] = useState([]);
+            const [animIn, setAnimIn] = useState(true);
+
+            const currentMap = selectedMap ? DATABASE[selectedMap] : null;
+            const currentChapterData = selectedChapter
+                ? currentMap?.chapters.find((c) => c.id === selectedChapter)
+                : null;
+
+            const navigate = (target, opts = {}) => {
+                setAnimIn(false);
+                setTimeout(() => {
+                    if (target === "home") {
+                        setView("home");
+                        setSelectedMap(null);
+                        setSelectedChapter(null);
+                        setSelectedStage(null);
+                    } else if (target === "mapSelect") {
+                        setView("mapSelect");
+                        setSelectedChapter(null);
+                        setSelectedStage(null);
+                    } else if (target === "chapterMap") {
+                        setView("chapterMap");
+                        setSelectedMap(opts.mapKey);
+                        setSelectedChapter(null);
+                        setSelectedStage(null);
+                    } else if (target === "stageSelect") {
+                        setView("stageSelect");
+                        setSelectedChapter(opts.chapterId);
+                    } else if (target === "game") {
+                        const stageKey = opts.stageKey;
+                        setSelectedStage(stageKey);
+                        let qs =
+                            stageKey === "onTap"
+                                ? generateOnTapQuestions(currentChapterData || DATABASE[opts.mapKey]?.chapters.find((c) => c.id === opts.chapterId))
+                                : (DATABASE[opts.mapKey || selectedMap]?.chapters.find((c) => c.id === (opts.chapterId || selectedChapter))?.stages[stageKey] || []);
+                        setQuestions(qs);
+                        setCurrentQ(0);
+                        setSelectedAnswers([]);
+                        setAnswered(false);
+                        setScore(0);
+                        setResults([]);
+                        setView("game");
+                    } else if (target === "result") {
+                        setView("result");
+                    } else if (target === "conceptLearn") {
+                        setView("conceptLearn");
+                    }
+                    setAnimIn(true);
+                }, 200);
+            };
+
+            const handleSelect = (index) => {
+                if (answered) return;
+                const q = questions[currentQ];
+                if (!q) return;
+
+                const isMulti = q.type === "multi";
+                if (isMulti) {
+                    setSelectedAnswers((prev) => (prev.includes(index) ? prev.filter((i) => i !== index) : [...prev, index]));
+                } else {
+                    setSelectedAnswers([index]);
+                    submitAnswer([index]);
+                }
+            };
+
+            const submitMulti = () => {
+                if (selectedAnswers.length === 0) return;
+                submitAnswer(selectedAnswers);
+            };
+
+            const submitAnswer = (answers) => {
+                const q = questions[currentQ];
+                let isCorrect = false;
+
+                if (q.type === "multi") {
+                    const correctSet = new Set(q.correctIndices);
+                    const ansSet = new Set(answers);
+                    isCorrect = correctSet.size === ansSet.size && [...correctSet].every((v) => ansSet.has(v));
+                } else {
+                    isCorrect = answers[0] === q.correctIndex;
+                }
+
+                setAnswered(true);
+                if (isCorrect) setScore((s) => s + 1);
+                setResults((prev) => [...prev, { question: q, userAnswers: answers, isCorrect, correctIndices: q.type === "multi" ? q.correctIndices : [q.correctIndex] }]);
+            };
+
+            const nextQuestion = () => {
+                if (currentQ + 1 >= questions.length) {
+                    navigate("result");
+                } else {
+                    setCurrentQ((c) => c + 1);
+                    setSelectedAnswers([]);
+                    setAnswered(false);
+                }
+            };
+
+            const containerStyle = {
+                opacity: animIn ? 1 : 0,
+                transition: "opacity 0.2s ease",
+            };
+
+            // ─── HOME ────────────────────────────────────────────────────────
+            if (view === "home") {
+                return (
+                    <div style={containerStyle}>
+                        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", minHeight: "100vh", padding: "40px 20px", textAlign: "center" }}>
+                            <div style={{ fontSize: "70px", marginBottom: "10px", filter: "drop-shadow(0 0 20px rgba(255,215,0,0.5))" }}>🇻🇳</div>
+                            <h1 style={{ fontSize: "clamp(28px, 6vw, 42px)", fontWeight: "900", background: "linear-gradient(90deg, #f59e0b, #ec4899, #8b5cf6)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", margin: "0 0 8px" }}>
+                                Tiếng Việt Quest
+                            </h1>
+                            <p style={{ color: "#94a3b8", fontSize: "16px", maxWidth: "440px", margin: "0 0 40px" }}>
+                                Hành trình chinh phục Ngữ Pháp Tiếng Việt qua 3 cấp độ hấp dẫn
+                            </p>
+                            <button
+                                onClick={() => navigate("mapSelect")}
+                                style={{
+                                    background: "linear-gradient(135deg, #8b5cf6, #ec4899)",
+                                    border: "none", color: "#fff", fontSize: "20px", fontWeight: "700", padding: "18px 56px", borderRadius: "50px", cursor: "pointer",
+                                    boxShadow: "0 8px 30px rgba(139,92,246,0.4)", transition: "transform 0.2s, box-shadow 0.2s"
+                                }}
+                            >
+                                🎮 Bắt Đầu
+                            </button>
+                        </div>
+                    </div>
+                );
+            }
+
+            // ─── MAP SELECT ──────────────────────────────────────────────────
+            if (view === "mapSelect") {
+                const maps = [
+                    { key: "soCapLevel", emoji: "🌱", title: "SƠ CẤP", subtitle: "Nền tảng ngữ pháp", color: "#4ade80", chapters: DATABASE.soCapLevel.chapters.length },
+                    { key: "trungCapLevel", emoji: "📚", title: "TRUNG CẤP", subtitle: "Mở rộng kiến thức", color: "#60a5fa", chapters: DATABASE.trungCapLevel.chapters.length },
+                    { key: "caoCapLevel", emoji: "🏆", title: "CAO CẤP", subtitle: "Chinh phục đỉnh núi", color: "#f59e0b", chapters: DATABASE.caoCapLevel.chapters.length },
+                ];
+                return (
+                    <div style={containerStyle} className="max-w-[600px] mx-auto p-[30px_20px]">
+                        <button onClick={() => navigate("home")} className="bg-transparent border-none text-[#94a3b8] cursor-pointer text-sm mb-5">← Quay lại</button>
+                        <h2 className="text-center text-[26px] font-extrabold mb-2">Chọn Cấp Độ</h2>
+                        <div className="flex flex-col gap-[18px]">
+                            {maps.map((m, i) => (
+                                <div key={m.key} onClick={() => navigate("chapterMap", { mapKey: m.key })}
+                                    style={{ background: `linear-gradient(135deg, rgba(30,30,50,0.9), rgba(20,20,40,0.95))`, border: `2px solid ${m.color}33`, borderRadius: "20px" }}
+                                    className="p-6 cursor-pointer flex items-center gap-5 transition-all duration-300 hover:translate-x-2"
+                                >
+                                    <div className="text-[48px]">{m.emoji}</div>
+                                    <div className="flex-1">
+                                        <div className="text-[20px] font-extrabold" style={{ color: m.color }}>{m.title}</div>
+                                        <div className="text-[#94a3b8] text-sm">{m.subtitle}</div>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                );
+            }
+
+            // ─── CHAPTER MAP ─────────────────────────────────────────────────
+            if (view === "chapterMap" && currentMap) {
+                return (
+                    <div style={containerStyle} className="max-w-[600px] mx-auto p-[30px_20px]">
+                        <button onClick={() => navigate("mapSelect")} className="bg-transparent border-none text-[#94a3b8] cursor-pointer text-sm mb-5">← Quay lại</button>
+                        <div className="text-center mb-[30px]">
+                            <h2 className="text-[24px] font-extrabold">{currentMap.title}</h2>
+                        </div>
+                        <div className="pl-10 relative">
+                            <div className="absolute left-[19px] top-0 bottom-0 w-[2px] bg-white/20"></div>
+                            {currentMap.chapters.map((ch, i) => (
+                                <div key={ch.id} className="relative mb-5" onClick={() => navigate("stageSelect", { chapterId: ch.id })}>
+                                    <div className="absolute -left-[40px] top-[24px] w-[22px] h-[22px] rounded-full bg-blue-500 border-2 border-black flex items-center justify-center text-[10px] font-bold z-10">{i + 1}</div>
+                                    <div className="bg-[#1e1e32]/90 border border-white/20 rounded-2xl p-5 cursor-pointer hover:bg-[#282841] transition-all">
+                                        <div className="font-bold text-lg">{ch.title}</div>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                );
+            }
+
+            // ─── STAGE SELECT ────────────────────────────────────────────────
+            if (view === "stageSelect" && currentChapterData) {
+                return (
+                    <div style={containerStyle} className="max-w-[600px] mx-auto p-[30px_20px]">
+                        <button onClick={() => navigate("chapterMap")} className="bg-transparent border-none text-[#94a3b8] cursor-pointer text-sm mb-5">← Quay lại</button>
+                        <h2 className="text-center text-[20px] font-extrabold mb-6">{currentChapterData.title}</h2>
+                        <div className="grid grid-cols-2 gap-[14px]">
+                            {STAGE_KEYS.map(key => {
+                                const color = STAGE_COLORS[key];
+                                const name = STAGE_NAMES[key];
+                                return (
+                                    <div key={key} onClick={() => navigate("game", { stageKey: key, chapterId: selectedChapter, mapKey: selectedMap })}
+                                        className="bg-[#1e1e32]/95 border-2 rounded-2xl p-5 cursor-pointer text-center hover:-translate-y-1 transition-all"
+                                        style={{ borderColor: `${color}33` }}
+                                    >
+                                        <div className="text-[32px] mb-2">{name.split(" ")[0]}</div>
+                                        <div style={{ color }} className="font-bold text-sm">{name.split(" ").slice(1).join(" ")}</div>
+                                    </div>
+                                );
+                            })}
+                        </div>
+                        <div onClick={() => navigate("conceptLearn")} className="mt-6 bg-purple-500/10 border border-purple-500/30 rounded-2xl p-4 cursor-pointer">
+                            <span className="font-bold text-purple-400">📘 Xem Lý Thuyết</span>
+                        </div>
+                    </div>
+                );
+            }
+
+            // ─── LÝ THUYẾT ───────────────────────────────────────────────────
+            if (view === "conceptLearn" && currentChapterData) {
+                const concept = GRAMMAR_CONCEPTS[currentChapterData.conceptKey];
+                return (
+                    <div style={containerStyle} className="max-w-[560px] mx-auto p-[40px_24px] text-center">
+                        <button onClick={() => navigate("stageSelect")} className="bg-transparent border-none text-[#94a3b8] cursor-pointer text-sm text-left block mb-5">← Quay lại</button>
+                        <h2 className="text-[24px] font-extrabold text-[#a78bfa] mb-4">{concept?.title}</h2>
+                        <div className="bg-purple-500/10 border border-purple-500/30 rounded-2xl p-6 text-left leading-relaxed text-[#cbd5e1]">
+                            {concept?.description}
+                        </div>
+                    </div>
+                );
+            }
+
+            // ─── GAME SCREEN ─────────────────────────────────────────────────
+            if (view === "game" && questions.length > 0) {
+                const q = questions[currentQ];
+                const isMulti = q?.type === "multi";
+                const stageColor = STAGE_COLORS[selectedStage] || "#8b5cf6";
+                const prog = ((currentQ) / questions.length) * 100;
+
+                return (
+                    <div style={containerStyle} className="max-w-[580px] mx-auto p-[24px_20px]">
+                        <div className="flex justify-between items-center mb-2">
+                            <span style={{ color: stageColor }} className="font-bold text-sm">{STAGE_NAMES[selectedStage]}</span>
+                            <span className="text-[#64748b] text-sm">{currentQ + 1} / {questions.length}</span>
+                        </div>
+                        <div className="bg-[#1e1e32] rounded-lg h-[6px] mb-6 overflow-hidden">
+                            <div style={{ width: `${prog}%`, background: stageColor }} className="h-full rounded-lg transition-all duration-400"></div>
+                        </div>
+
+                        <div className="bg-[#19192d]/95 border border-[#64748b]/20 rounded-[22px] p-[28px_22px] mb-5">
+                            {q.thanGu && <div className="bg-amber-500/10 border border-amber-500/30 text-amber-400 rounded-lg p-[8px_14px] mb-3 text-[13px]">💡 Thành ngữ: "{q.thanGu}"</div>}
+                            {q.image && (
+                                <div className="text-center mb-4">
+                                    <div className="bg-[#1e1e37]/80 rounded-2xl p-5 inline-block text-[48px]">{q.image}</div>
+                                </div>
+                            )}
+                            <p className="text-[17px] font-semibold leading-relaxed m-0">{q.question}</p>
+                        </div>
+
+                        <div className="flex flex-col gap-3 mb-5">
+                            {q.options.map((opt, i) => {
+                                const isSelected = selectedAnswers.includes(i);
+                                const correctIndices = isMulti ? (q.correctIndices || []) : [q.correctIndex];
+                                const isCorrect = correctIndices.includes(i);
+
+                                let bg = "bg-[#1e1e37]/90";
+                                let borderColor = "border-[#64748b]/30";
+                                let textColor = "text-[#e2e8f0]";
+
+                                if (!answered && isSelected) {
+                                    bg = `bg-[${stageColor}]/20`; // Thường tailwind sẽ ko render dynamic color tốt theo cách này, ta dùng inline style
+                                }
+                                if (answered && isCorrect) { bg = "bg-green-500/20"; borderColor = "border-green-400"; textColor = "text-green-400"; }
+                                if (answered && isSelected && !isCorrect) { bg = "bg-red-500/20"; borderColor = "border-red-500"; textColor = "text-red-500"; }
+
+                                return (
+                                    <div key={i} onClick={() => handleSelect(i)}
+                                        className={`${bg} border-2 ${borderColor} ${textColor} rounded-[14px] p-[14px_18px] cursor-pointer flex items-center gap-3 transition-colors`}
+                                        style={(!answered && isSelected) ? { borderColor: stageColor, color: stageColor } : {}}
+                                    >
+                                        <span className="bg-[#64748b]/20 rounded-lg w-7 h-7 flex items-center justify-center text-[13px] font-bold shrink-0">{String.fromCharCode(65 + i)}</span>
+                                        <span>{opt}</span>
+                                    </div>
+                                )
+                            })}
+                        </div>
+
+                        <div className="flex gap-3">
+                            {isMulti && !answered && (
+                                <button onClick={submitMulti} disabled={selectedAnswers.length === 0}
+                                    className={`flex-1 p-3 rounded-xl font-bold ${selectedAnswers.length > 0 ? "bg-blue-600 text-white" : "bg-slate-700 text-slate-400"}`}
+                                >Xác nhận</button>
+                            )}
+                            {answered && (
+                                <button onClick={nextQuestion} style={{ background: "linear-gradient(135deg, #8b5cf6, #ec4899)" }} className="flex-1 p-[14px] rounded-xl font-bold shadow-[0_4px_16px_rgba(139,92,246,0.3)]">
+                                    {currentQ + 1 >= questions.length ? "Xem Kết Quả →" : "Tiếp theo →"}
+                                </button>
+                            )}
+                        </div>
+                    </div>
+                );
+            }
+
+            // ─── RESULT SCREEN ─────────────────────────────────────────────────
+            if (view === "result") {
+                const total = questions.length;
+                const pct = Math.round((score / total) * 100);
+                return (
+                    <div style={containerStyle} className="max-w-[560px] mx-auto p-[40px_24px] text-center">
+                        <div className="text-[64px] mb-3">🏆</div>
+                        <h2 className="text-[28px] font-extrabold mb-2">Kết Quả</h2>
+                        <p className="text-[#94a3b8] mb-6">Bạn đã hoàn thành!</p>
+                        <div className="text-4xl text-green-400 font-bold mb-6">{pct}% ({score}/{total})</div>
+                        <button onClick={() => navigate("stageSelect")} className="bg-slate-700 p-[12px_28px] rounded-[40px] font-bold cursor-pointer">Chọn Màn Khác</button>
+                    </div>
+                );
+            }
+
+            return <div>Loading...</div>;
+        }
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+
+</html>

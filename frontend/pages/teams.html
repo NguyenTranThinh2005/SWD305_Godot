@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VNEG – Nhóm Học Tập</title>
+    <link rel="stylesheet" href="../style.css">
+    <style>
+        body {
+            background: var(--c-bg);
+        }
+
+        .layout {
+            display: grid;
+            grid-template-columns: 240px 1fr;
+            min-height: 100vh;
+        }
+
+        @media(max-width:900px) {
+            .layout {
+                grid-template-columns: 1fr;
+            }
+
+            .sidebar {
+                display: none;
+            }
+        }
+
+        .sidebar {
+            background: var(--c-bg-2);
+            border-right: 1px solid var(--c-border);
+            padding: var(--sp-lg);
+            display: flex;
+            flex-direction: column;
+            gap: var(--sp-sm);
+            position: sticky;
+            top: 0;
+            height: 100vh;
+            overflow-y: auto;
+        }
+
+        .sidebar-logo {
+            display: flex;
+            align-items: center;
+            gap: var(--sp-sm);
+            padding: var(--sp-md) 0;
+            margin-bottom: var(--sp-md);
+            border-bottom: 1px solid var(--c-border);
+            text-decoration: none;
+            color: var(--c-text);
+        }
+
+        .sidebar-logo-icon {
+            width: 36px;
+            height: 36px;
+            background: var(--g-primary);
+            border-radius: var(--r-sm);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1rem;
+            box-shadow: var(--glow-primary);
+        }
+
+        .sidebar-logo-text {
+            font-size: 1.2rem;
+            font-weight: 800;
+        }
+
+        .sidebar-nav {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .sidebar-link {
+            display: flex;
+            align-items: center;
+            gap: var(--sp-md);
+            padding: 10px var(--sp-md);
+            border-radius: var(--r-md);
+            color: var(--c-text-2);
+            text-decoration: none;
+            font-size: 0.9rem;
+            font-weight: 500;
+            transition: all var(--t-fast);
+        }
+
+        .sidebar-link:hover {
+            background: var(--c-surface-2);
+            color: var(--c-text);
+        }
+
+        .sidebar-link.active {
+            background: rgba(108, 99, 255, 0.15);
+            color: var(--c-primary-2);
+            border-right: 2px solid var(--c-primary);
+        }
+
+        .sidebar-link .icon {
+            font-size: 1.1rem;
+            width: 24px;
+            text-align: center;
+        }
+
+        .sidebar-user {
+            margin-top: auto;
+            padding-top: var(--sp-md);
+            border-top: 1px solid var(--c-border);
+        }
+
+        .sidebar-user-card {
+            display: flex;
+            align-items: center;
+            gap: var(--sp-md);
+            padding: var(--sp-md);
+            border-radius: var(--r-md);
+            background: var(--c-surface);
+            cursor: pointer;
+        }
+
+        .sidebar-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: var(--g-primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            flex-shrink: 0;
+        }
+
+        .main-content {
+            overflow-y: auto;
+            padding: var(--sp-xl);
+        }
+
+        .team-card {
+            border-radius: var(--r-xl);
+            padding: var(--sp-xl);
+            background: var(--g-card);
+            border: 1px solid var(--c-border);
+            transition: all var(--t-med);
+            cursor: pointer;
+        }
+
+        .team-card:hover {
+            border-color: rgba(108, 99, 255, 0.4);
+            box-shadow: 0 8px 40px rgba(108, 99, 255, 0.15);
+            transform: translateY(-2px);
+        }
+
+        .tc-header {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            margin-bottom: var(--sp-md);
+        }
+
+        .tc-icon {
+            width: 52px;
+            height: 52px;
+            border-radius: var(--r-md);
+            background: var(--g-primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            box-shadow: var(--glow-primary);
+        }
+
+        .tc-name {
+            font-size: 1.1rem;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+
+        .tc-desc {
+            font-size: 0.82rem;
+            color: var(--c-text-2);
+        }
+
+        .invite-row {
+            display: flex;
+            align-items: center;
+            gap: var(--sp-sm);
+            padding: var(--sp-sm) var(--sp-md);
+            background: rgba(255, 255, 255, 0.04);
+            border-radius: var(--r-md);
+            margin-top: var(--sp-md);
+        }
+
+        .invite-code {
+            font-family: monospace;
+            font-size: 0.9rem;
+            font-weight: 700;
+            color: var(--c-primary-2);
+            flex: 1;
+        }
+
+        .copy-btn {
+            padding: 4px 10px;
+            font-size: 0.78rem;
+        }
+
+        .member-list {
+            display: flex;
+            flex-direction: column;
+            gap: var(--sp-sm);
+            margin-top: var(--sp-md);
+        }
+
+        .member-row {
+            display: flex;
+            align-items: center;
+            gap: var(--sp-md);
+            padding: var(--sp-sm) var(--sp-md);
+            border-radius: var(--r-md);
+            background: var(--c-surface);
+            border: 1px solid var(--c-border);
+        }
+
+        .m-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: var(--g-primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.95rem;
+            flex-shrink: 0;
+        }
+
+        .m-email {
+            flex: 1;
+            font-size: 0.88rem;
+        }
+
+        .m-role {
+            font-size: 0.75rem;
+        }
+
+        .team-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+            gap: var(--sp-xl);
+        }
+
+        .action-bar {
+            display: flex;
+            gap: var(--sp-md);
+            margin-bottom: var(--sp-xl);
+            flex-wrap: wrap;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="starfield"></div>
+    <div class="layout page-content">
+        <aside class="sidebar">
+            <a class="sidebar-logo" href="dashboard.html">
+                <div class="sidebar-logo-icon">🌀</div>
+                <span class="sidebar-logo-text">VNEG</span>
+            </a>
+            <nav class="sidebar-nav">
+                <a class="sidebar-link" href="dashboard.html"><span class="icon">🏠</span> Dashboard</a>
+                <a class="sidebar-link" href="world-map.html"><span class="icon">🗺️</span> Thế giới</a>
+                <a class="sidebar-link" href="profile.html"><span class="icon">📊</span> Hồ sơ</a>
+                <a class="sidebar-link active" href="teams.html"><span class="icon">👥</span> Nhóm học tập</a>
+            </nav>
+            <div class="sidebar-user">
+                <div class="sidebar-user-card">
+                    <div class="sidebar-avatar" id="sidebarAvatar">😊</div>
+                    <div>
+                        <div style="font-size:0.9rem;font-weight:600" id="sidebarName">…</div>
+                        <div style="font-size:0.75rem;color:var(--c-text-2)">🎓 Học sinh</div>
+                    </div>
+                </div>
+                <button class="btn btn-secondary btn-sm btn-full mt-sm" onclick="handleLogout()">🚪 Đăng xuất</button>
+            </div>
+        </aside>
+
+        <main class="main-content">
+            <div class="page-title">👥 Nhóm Học Tập <span>Tạo hoặc tham gia nhóm với giáo viên & bạn bè</span></div>
+
+            <div class="action-bar">
+                <button class="btn btn-primary" onclick="openModal('createModal')">➕ Tạo nhóm mới</button>
+                <button class="btn btn-secondary" onclick="openModal('joinModal')">🔑 Tham gia bằng mã</button>
+            </div>
+
+            <div class="team-grid" id="teamGrid">
+                <div class="loading-screen" style="grid-column:1/-1;min-height:200px">
+                    <div class="spinner"></div>
+                    <p>Đang tải nhóm của bạn…</p>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Create Modal -->
+    <div class="modal-overlay" id="createModal">
+        <div class="modal">
+            <div class="modal-header">
+                <span class="modal-title">➕ Tạo nhóm mới</span>
+                <button class="modal-close" onclick="closeModal('createModal')">✕</button>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Tên nhóm *</label>
+                <input id="newTeamName" class="form-control" placeholder="VD: Lớp 5A - Ngữ pháp" required>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Mô tả</label>
+                <input id="newTeamDesc" class="form-control" placeholder="Nhóm luyện ngữ pháp lớp 5...">
+            </div>
+            <div id="createError" class="form-error hidden"></div>
+            <button class="btn btn-primary btn-full mt-md" onclick="createTeam()">Tạo nhóm ✨</button>
+        </div>
+    </div>
+
+    <!-- Join Modal -->
+    <div class="modal-overlay" id="joinModal">
+        <div class="modal">
+            <div class="modal-header">
+                <span class="modal-title">🔑 Tham gia nhóm</span>
+                <button class="modal-close" onclick="closeModal('joinModal')">✕</button>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Mã mời (Invite Code)</label>
+                <input id="inviteCode" class="form-control" placeholder="Nhập mã từ giáo viên..."
+                    style="font-family:monospace;letter-spacing:2px">
+            </div>
+            <div id="joinError" class="form-error hidden"></div>
+            <button class="btn btn-primary btn-full mt-md" onclick="joinTeam()">Tham gia →</button>
+        </div>
+    </div>
+
+    <!-- Members Modal -->
+    <div class="modal-overlay" id="membersModal">
+        <div class="modal" style="max-width:560px">
+            <div class="modal-header">
+                <span class="modal-title" id="membersTitle">Thành viên</span>
+                <button class="modal-close" onclick="closeModal('membersModal')">✕</button>
+            </div>
+            <div class="member-list" id="memberList">
+                <div class="loading-screen" style="min-height:80px">
+                    <div class="spinner"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="toast-container"></div>
+
+    <script type="module">
+        import { Auth, Teams } from '../api.js';
+        import { requireAuth, logout } from '../js/auth.js';
+
+        const user = requireAuth(); if (!user) throw new Error('auth');
+        window.handleLogout = async function () { await Auth.logout(); logout(); };
+        document.getElementById('sidebarAvatar').textContent = user.avatarUrl || '😊';
+        document.getElementById('sidebarName').textContent = user.email.split('@')[0];
+
+        window.openModal = (id) => document.getElementById(id).classList.add('open');
+        window.closeModal = (id) => document.getElementById(id).classList.remove('open');
+
+        const TEAM_ICONS = ['🏫', '🌟', '🔥', '🦁', '🎯', '🌊', '⚡', '🎮'];
+
+        async function loadTeams() {
+            const res = await Teams.getMyTeams();
+            const grid = document.getElementById('teamGrid');
+            if (!res.ok || !res.data?.length) {
+                grid.innerHTML = `<div class="empty-state" style="grid-column:1/-1">
+        <div class="empty-icon">👥</div>
+        <p>Bạn chưa tham gia nhóm nào.</p>
+        <div style="display:flex;gap:var(--sp-md);justify-content:center;margin-top:var(--sp-lg)">
+          <button class="btn btn-primary" onclick="openModal('createModal')">Tạo nhóm</button>
+          <button class="btn btn-secondary" onclick="openModal('joinModal')">Tham gia nhóm</button>
+        </div></div>`;
+                return;
+            }
+            grid.innerHTML = res.data.map((t, i) => {
+                const icon = TEAM_ICONS[i % TEAM_ICONS.length];
+                const isOwner = t.ownerId === user.id;
+                return `
+      <div class="team-card">
+        <div class="tc-header">
+          <div style="display:flex;gap:var(--sp-md);align-items:center">
+            <div class="tc-icon">${icon}</div>
+            <div>
+              <div class="tc-name">${t.name}</div>
+              <div class="tc-desc">${t.description || 'Không có mô tả'}</div>
+            </div>
+          </div>
+          <div style="display:flex;gap:var(--sp-sm)">
+            ${isOwner ? `<span class="badge badge-gold">👑 Owner</span>` : `<span class="badge badge-primary">Thành viên</span>`}
+          </div>
+        </div>
+        ${isOwner ? `
+        <div class="invite-row">
+          <span style="font-size:0.75rem;color:var(--c-text-2)">Mã mời:</span>
+          <span class="invite-code" id="code-${t.id}">${t.inviteCode}</span>
+          <button class="btn btn-secondary btn-sm copy-btn" onclick="copyCode('${t.inviteCode}')">📋 Copy</button>
+        </div>` : ''}
+        <div style="display:flex;gap:var(--sp-sm);margin-top:var(--sp-md);flex-wrap:wrap">
+          <button class="btn btn-secondary btn-sm" onclick="viewMembers(${t.id},'${t.name}')">👥 Thành viên</button>
+          ${!isOwner ? `<button class="btn btn-danger btn-sm" onclick="leaveTeam(${t.id},'${t.name}')">🚪 Rời nhóm</button>` : ''}
+          ${isOwner ? `<button class="btn btn-danger btn-sm" onclick="deleteTeam(${t.id},'${t.name}')">🗑️ Xóa nhóm</button>` : ''}
+        </div>
+      </div>`;
+            }).join('');
+        }
+
+        window.copyCode = function (code) {
+            navigator.clipboard.writeText(code).catch(() => { });
+            toast('Đã copy mã mời!', 'success');
+        };
+
+        window.viewMembers = async function (teamId, name) {
+            document.getElementById('membersTitle').textContent = `👥 ${name}`;
+            document.getElementById('memberList').innerHTML = '<div class="loading-screen" style="min-height:80px"><div class="spinner"></div></div>';
+            openModal('membersModal');
+            const res = await Teams.getMembers(teamId);
+            if (!res.ok || !res.data?.length) {
+                document.getElementById('memberList').innerHTML = '<p class="text-muted text-sm">Chưa có thành viên</p>';
+                return;
+            }
+            document.getElementById('memberList').innerHTML = res.data.map(m => `
+      <div class="member-row">
+        <div class="m-avatar">${m.avatarUrl || '😊'}</div>
+        <div class="m-email">${m.email}</div>
+        <span class="badge badge-primary m-role">${m.role}</span>
+        <span style="font-size:0.75rem;color:var(--c-text-3)">${m.joinDate ? new Date(m.joinDate).toLocaleDateString('vi-VN') : ''}</span>
+      </div>`).join('');
+        };
+
+        window.leaveTeam = async function (id, name) {
+            if (!confirm(`Bạn muốn rời nhóm "${name}"?`)) return;
+            const res = await Teams.leave(id);
+            if (res.ok) { toast('Đã rời nhóm', 'success'); loadTeams(); }
+            else toast('Không thể rời nhóm', 'error');
+        };
+
+        window.deleteTeam = async function (id, name) {
+            if (!confirm(`Xóa nhóm "${name}"? Tất cả thành viên sẽ bị xóa.`)) return;
+            const res = await Teams.deleteTeam(id);
+            if (res.ok) { toast('Đã xóa nhóm', 'success'); loadTeams(); }
+            else toast('Không thể xóa nhóm', 'error');
+        };
+
+        window.createTeam = async function () {
+            const name = document.getElementById('newTeamName').value.trim();
+            const desc = document.getElementById('newTeamDesc').value.trim();
+            const err = document.getElementById('createError');
+            if (!name) { err.textContent = 'Tên nhóm là bắt buộc'; err.classList.remove('hidden'); return; }
+            const res = await Teams.create(name, desc);
+            if (res.ok) {
+                toast('Tạo nhóm thành công! 🎉', 'success');
+                closeModal('createModal');
+                loadTeams();
+            } else {
+                err.textContent = typeof res.data === 'string' ? res.data : 'Tạo nhóm thất bại';
+                err.classList.remove('hidden');
+            }
+        };
+
+        window.joinTeam = async function () {
+            const code = document.getElementById('inviteCode').value.trim();
+            const err = document.getElementById('joinError');
+            if (!code) { err.textContent = 'Nhập mã mời'; err.classList.remove('hidden'); return; }
+            const res = await Teams.join(code);
+            if (res.ok) {
+                toast('Tham gia nhóm thành công! 🎉', 'success');
+                closeModal('joinModal');
+                loadTeams();
+            } else {
+                err.textContent = typeof res.data === 'string' ? res.data : 'Mã mời không hợp lệ';
+                err.classList.remove('hidden');
+            }
+        };
+
+        function toast(msg, type = 'info') {
+            const c = document.getElementById('toast-container');
+            const t = document.createElement('div');
+            const icons = { success: '✅', error: '❌', warning: '⚠️', info: 'ℹ️' };
+            t.className = `toast toast-${type}`;
+            t.innerHTML = `<span>${icons[type]}</span> ${msg}`;
+            c.appendChild(t); setTimeout(() => t.remove(), 3500);
+        }
+
+        loadTeams();
+    </script>
+</body>
+
+</html>
