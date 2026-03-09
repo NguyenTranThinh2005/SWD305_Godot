@@ -12,12 +12,6 @@ func _ready():
 	if has_node("BackButton"):
 		$BackButton.pressed.connect(func(): get_tree().change_scene_to_file("res://scenes/MainMenu.tscn"))
 		
-	# Add Logout button programmatically next to back button if it exists
-	var btn_logout = Button.new()
-	btn_logout.text = "Đăng xuất"
-	btn_logout.pressed.connect(_on_logout_pressed)
-	$VBoxContainer/TopPanel.add_child(btn_logout)
-		
 	if AuthManager.is_logged_in():
 		var user = AuthManager.current_user
 		user_info_label.text = "Hồ sơ: " + user.get("email", "Unknown") + "\nLớp: " + str(user.get("grade", "?")) + " | Vùng: " + user.get("region", "")
@@ -93,7 +87,3 @@ func _load_grammar_progress() -> void:
 	else:
 		status_label.text = "Lỗi tải dữ liệu ngữ pháp!"
 		status_label.add_theme_color_override("font_color", Color.RED)
-
-func _on_logout_pressed() -> void:
-	await API.logout()
-	get_tree().change_scene_to_file("res://scenes/LoginScreen.tscn")

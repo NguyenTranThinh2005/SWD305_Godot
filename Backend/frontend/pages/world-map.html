@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VNEG – Thế Giới Ngữ Pháp</title>
+    <link rel="stylesheet" href="../style.css">
+    <style>
+        body {
+            background: var(--c-bg);
+            overflow-x: hidden;
+        }
+
+        /* Top bar */
+        .topbar {
+            position: sticky;
+            top: 0;
+            z-index: 50;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: var(--sp-md) var(--sp-xl);
+            background: rgba(8, 11, 20, 0.9);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--c-border);
+        }
+
+        .topbar-left {
+            display: flex;
+            align-items: center;
+            gap: var(--sp-md);
+        }
+
+        .topbar-right {
+            display: flex;
+            align-items: center;
+            gap: var(--sp-md);
+        }
+
+        .back-btn {
+            display: flex;
+            align-items: center;
+            gap: var(--sp-sm);
+            color: var(--c-text-2);
+            text-decoration: none;
+            font-size: 0.9rem;
+            padding: 8px var(--sp-md);
+            border-radius: var(--r-md);
+            border: 1px solid var(--c-border);
+            transition: all var(--t-fast);
+        }
+
+        .back-btn:hover {
+            color: var(--c-text);
+            background: var(--c-surface);
+        }
+
+        .grade-filter {
+            display: flex;
+            align-items: center;
+            gap: var(--sp-sm);
+        }
+
+        .grade-pill {
+            padding: 6px 14px;
+            border-radius: var(--r-full);
+            border: 1px solid var(--c-border);
+            font-size: 0.82rem;
+            font-weight: 600;
+            cursor: pointer;
+            background: var(--c-surface);
+            color: var(--c-text-2);
+            transition: all var(--t-fast);
+        }
+
+        .grade-pill.active {
+            background: var(--g-primary);
+            border-color: transparent;
+            color: white;
+            box-shadow: var(--glow-primary);
+        }
+
+        .grade-pill:hover:not(.active) {
+            background: var(--c-surface-2);
+            color: var(--c-text);
+        }
+
+        /* World canvas area */
+        .world-container {
+            min-height: calc(100vh - 80px);
+            padding: var(--sp-xl);
+            position: relative;
+        }
+
+        .world-title {
+            text-align: center;
+            margin-bottom: var(--sp-xl);
+        }
+
+        .world-title h1 {
+            font-size: 2.4rem;
+            font-weight: 900;
+        }
+
+        .world-title p {
+            color: var(--c-text-2);
+            margin-top: var(--sp-sm);
+        }
+
+        /* Map nodes grid */
+        .map-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: var(--sp-xl);
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+
+        /* Planet / map node */
+        .map-node {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: var(--sp-md);
+            cursor: pointer;
+            text-decoration: none;
+        }
+
+        .planet-wrap {
+            position: relative;
+            animation: float var(--fa, 3.5s) ease-in-out infinite;
+            animation-delay: var(--fd, 0s);
+        }
+
+        .planet {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.8rem;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4), var(--ps, var(--glow-primary));
+            background: var(--pb, var(--g-primary));
+            transition: transform var(--t-med), box-shadow var(--t-med);
+            position: relative;
+        }
+
+        .planet::before {
+            content: '';
+            position: absolute;
+            inset: -8px;
+            border-radius: 50%;
+            border: 1.5px dashed var(--pc, rgba(108, 99, 255, 0.4));
+            animation: orbitRing 8s linear infinite;
+        }
+
+        .map-node:hover .planet {
+            transform: scale(1.1);
+            box-shadow: 0 12px 50px rgba(0, 0, 0, 0.5), 0 0 60px var(--pgl, rgba(108, 99, 255, 0.6));
+        }
+
+        .map-node-info {
+            text-align: center;
+        }
+
+        .map-node-name {
+            font-size: 1rem;
+            font-weight: 700;
+        }
+
+        .map-node-sub {
+            font-size: 0.78rem;
+            color: var(--c-text-2);
+            margin-top: 2px;
+        }
+
+        @keyframes orbitRing {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* Locked node */
+        .map-node.locked .planet {
+            filter: grayscale(0.7) brightness(0.5);
+            cursor: not-allowed;
+        }
+
+        .lock-badge {
+            position: absolute;
+            top: -4px;
+            right: -4px;
+            background: #222;
+            border: 1px solid var(--c-border);
+            border-radius: 50%;
+            width: 28px;
+            height: 28px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.85rem;
+        }
+
+        /* Connection line */
+        .world-path {
+            position: absolute;
+            top: 0;
+            left: 0;
+            pointer-events: none;
+            opacity: 0.25;
+        }
+
+        /* Slide-in game list panel */
+        .game-panel {
+            position: fixed;
+            right: 0;
+            top: 0;
+            bottom: 0;
+            width: 380px;
+            z-index: 200;
+            background: var(--c-bg-2);
+            border-left: 1px solid var(--c-border-2);
+            padding: var(--sp-xl);
+            transform: translateX(100%);
+            transition: transform var(--t-slow);
+            overflow-y: auto;
+            backdrop-filter: blur(20px);
+        }
+
+        .game-panel.open {
+            transform: translateX(0);
+        }
+
+        .panel-overlay {
+            position: fixed;
+            inset: 0;
+            z-index: 199;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(4px);
+            display: none;
+        }
+
+        .panel-overlay.open {
+            display: block;
+        }
+
+        .panel-header {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            margin-bottom: var(--sp-xl);
+        }
+
+        .panel-map-planet {
+            font-size: 3.5rem;
+            margin-bottom: var(--sp-sm);
+        }
+
+        .panel-title {
+            font-size: 1.4rem;
+            font-weight: 800;
+        }
+
+        .panel-sub {
+            font-size: 0.85rem;
+            color: var(--c-text-2);
+        }
+
+        .panel-close {
+            background: var(--c-surface);
+            border: 1px solid var(--c-border);
+            border-radius: var(--r-sm);
+            padding: 8px 12px;
+            color: var(--c-text-2);
+            cursor: pointer;
+            font-size: 1rem;
+            transition: all var(--t-fast);
+        }
+
+        .panel-close:hover {
+            background: var(--c-surface-2);
+            color: var(--c-text);
+        }
+
+        .game-list {
+            display: flex;
+            flex-direction: column;
+            gap: var(--sp-md);
+        }
+
+        .game-card {
+            display: flex;
+            align-items: center;
+            gap: var(--sp-md);
+            padding: var(--sp-md);
+            border-radius: var(--r-lg);
+            border: 1px solid var(--c-border);
+            background: var(--c-surface);
+            cursor: pointer;
+            text-decoration: none;
+            color: var(--c-text);
+            transition: all var(--t-fast);
+        }
+
+        .game-card:hover {
+            border-color: rgba(108, 99, 255, 0.4);
+            background: rgba(108, 99, 255, 0.08);
+            transform: translateX(-4px);
+        }
+
+        .game-card-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: var(--r-md);
+            background: var(--g-primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.4rem;
+            flex-shrink: 0;
+            box-shadow: var(--glow-primary);
+        }
+
+        .game-card-icon.mini {
+            background: var(--g-accent);
+            box-shadow: var(--glow-accent);
+        }
+
+        .game-card-title {
+            font-size: 0.95rem;
+            font-weight: 600;
+        }
+
+        .game-card-meta {
+            font-size: 0.78rem;
+            color: var(--c-text-2);
+            margin-top: 2px;
+        }
+
+        .game-card-badge {
+            margin-left: auto;
+            flex-shrink: 0;
+        }
+
+        /* Planet color themes per grade group */
+        .pg-1 {
+            --pb: linear-gradient(135deg, #ff9a56, #ff6b9d);
+            --ps: 0 0 30px rgba(255, 107, 157, 0.5);
+            --pc: rgba(255, 107, 157, 0.4);
+            --pgl: rgba(255, 107, 157, 0.6);
+        }
+
+        .pg-2 {
+            --pb: linear-gradient(135deg, #ffd700, #ff9a56);
+            --ps: 0 0 30px rgba(255, 215, 0, 0.5);
+            --pc: rgba(255, 215, 0, 0.4);
+            --pgl: rgba(255, 215, 0, 0.6);
+        }
+
+        .pg-3 {
+            --pb: linear-gradient(135deg, #00e5a0, #00b4d8);
+            --ps: 0 0 30px rgba(0, 229, 160, 0.5);
+            --pc: rgba(0, 229, 160, 0.4);
+            --pgl: rgba(0, 229, 160, 0.6);
+        }
+
+        .pg-4 {
+            --pb: linear-gradient(135deg, #6c63ff, #00d4ff);
+            --ps: 0 0 30px rgba(108, 99, 255, 0.5);
+            --pc: rgba(108, 99, 255, 0.4);
+            --pgl: rgba(108, 99, 255, 0.6);
+        }
+    </style>
+</head>
+
+<body>
+    <div class="starfield"></div>
+    <div class="page-content">
+
+        <!-- Top Bar -->
+        <div class="topbar">
+            <div class="topbar-left">
+                <a class="back-btn" href="dashboard.html">← Dashboard</a>
+                <div style="font-size:1.1rem;font-weight:800">🗺️ Thế Giới Ngữ Pháp</div>
+            </div>
+            <div class="topbar-right">
+                <div class="grade-filter">
+                    <span class="text-sm text-muted">Lọc: </span>
+                    <button class="grade-pill active" onclick="filterGrade(null,this)">Tất cả</button>
+                    <button class="grade-pill" onclick="filterGrade(1,this)">Tiểu học</button>
+                    <button class="grade-pill" onclick="filterGrade(2,this)">THCS</button>
+                    <button class="grade-pill" onclick="filterGrade(3,this)">THPT</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- World -->
+        <div class="world-container">
+            <div class="world-title">
+                <h1>🌌 <span class="text-gradient">Grammar Antigravity World</span></h1>
+                <p>Chọn hành tinh để bắt đầu hành trình ngữ pháp của bạn</p>
+            </div>
+
+            <div class="map-grid" id="mapGrid">
+                <div class="loading-screen" style="grid-column:1/-1">
+                    <div class="spinner"></div>
+                    <p>Đang tải bản đồ thế giới…</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Game Panel Overlay -->
+        <div class="panel-overlay" id="panelOverlay" onclick="closePanel()"></div>
+
+        <!-- Game Panel -->
+        <div class="game-panel" id="gamePanel">
+            <div class="panel-header">
+                <div>
+                    <div class="panel-map-planet" id="panelPlanet">🌍</div>
+                    <div class="panel-title" id="panelTitle">Chọn bài học</div>
+                    <div class="panel-sub" id="panelSub">Chọn bài để bắt đầu chơi</div>
+                </div>
+                <button class="panel-close" onclick="closePanel()">✕</button>
+            </div>
+            <div class="game-list" id="gameList">
+                <div class="loading-screen" style="min-height:100px">
+                    <div class="spinner"></div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+    <div id="toast-container"></div>
+
+    <script type="module">
+        import { Maps, Games } from '../api.js';
+        import { requireAuth } from '../js/auth.js';
+
+        const user = requireAuth();
+        if (!user) throw new Error('Not authenticated');
+
+        const PLANET_EMOJIS = ['🌍', '🌙', '⭐', '🪐', '🌟', '☄️', '🌌', '💫', '🔮', '🌠', '🛸', '🗺️'];
+        const PLANET_COLORS = ['pg-1', 'pg-2', 'pg-3', 'pg-4'];
+        const GAME_TYPE_ICONS = { main: '📖', mini: '⚡', boss: '👹', default: '🎮' };
+
+        let allMaps = [];
+
+        async function loadMaps() {
+            const res = await Maps.getAll();
+            if (!res.ok || !res.data?.length) {
+                document.getElementById('mapGrid').innerHTML = `
+        <div class="empty-state" style="grid-column:1/-1">
+          <div class="empty-icon">🪐</div>
+          <p>Chưa có bản đồ nào. Hãy thêm maps từ Admin Panel.</p>
+        </div>`;
+                return;
+            }
+            allMaps = res.data;
+            renderMaps(allMaps);
+        }
+
+        function renderMaps(maps) {
+            const grid = document.getElementById('mapGrid');
+            if (!maps.length) {
+                grid.innerHTML = `<div class="empty-state" style="grid-column:1/-1"><div class="empty-icon">🔭</div><p>Không có kết quả phù hợp</p></div>`;
+                return;
+            }
+            grid.innerHTML = maps.map((m, i) => {
+                const emoji = PLANET_EMOJIS[i % PLANET_EMOJIS.length];
+                const colorClass = PLANET_COLORS[Math.floor(i / 3) % PLANET_COLORS.length];
+                const delay = (i * 0.4).toFixed(1);
+                const dur = (3 + (i % 3)).toFixed(1);
+                return `
+      <div class="map-node" style="--fa:${dur}s;--fd:${delay}s" onclick="openPanel(${m.id},'${emoji}','${m.name}')">
+        <div class="planet-wrap">
+          <div class="planet ${colorClass}">
+            ${emoji}
+          </div>
+        </div>
+        <div class="map-node-info">
+          <div class="map-node-name">${m.name}</div>
+          <div class="map-node-sub">Thứ tự: ${m.orderIndex ?? i + 1}</div>
+        </div>
+      </div>`;
+            }).join('');
+        }
+
+        window.filterGrade = function (grp, el) {
+            document.querySelectorAll('.grade-pill').forEach(p => p.classList.remove('active'));
+            el.classList.add('active');
+            if (grp === null) { renderMaps(allMaps); return; }
+            // Tiểu học=1 (orderIndex 1-5), THCS=2 (6-9), THPT=3 (10-12)
+            const filtered = allMaps.filter(m => {
+                const idx = m.orderIndex || 1;
+                if (grp === 1) return idx <= 5;
+                if (grp === 2) return idx >= 6 && idx <= 9;
+                if (grp === 3) return idx >= 10;
+                return true;
+            });
+            renderMaps(filtered);
+        };
+
+        window.openPanel = async function (mapId, planet, name) {
+            document.getElementById('panelPlanet').textContent = planet;
+            document.getElementById('panelTitle').textContent = name;
+            document.getElementById('panelSub').textContent = 'Đang tải danh sách bài học…';
+            document.getElementById('gameList').innerHTML = '<div class="loading-screen" style="min-height:100px"><div class="spinner"></div></div>';
+            document.getElementById('gamePanel').classList.add('open');
+            document.getElementById('panelOverlay').classList.add('open');
+
+            const res = await Games.getByMap(mapId);
+            if (!res.ok || !res.data?.length) {
+                document.getElementById('panelSub').textContent = 'Chưa có bài học nào';
+                document.getElementById('gameList').innerHTML = '<div class="empty-state"><div class="empty-icon">📭</div><p>Chưa có game nào trong bản đồ này</p></div>';
+                return;
+            }
+            const games = res.data.sort((a, b) => (a.orderIndex || 0) - (b.orderIndex || 0));
+            document.getElementById('panelSub').textContent = `${games.length} bài học`;
+            document.getElementById('gameList').innerHTML = games.map(g => {
+                const icon = GAME_TYPE_ICONS[g.gameType?.toLowerCase()] || '🎮';
+                const isMini = g.gameType?.toLowerCase() === 'mini';
+                return `
+      <a class="game-card" href="game.html?gameId=${g.id}&mapId=${mapId}&name=${encodeURIComponent(g.name)}">
+        <div class="game-card-icon ${isMini ? 'mini' : ''}">${icon}</div>
+        <div>
+          <div class="game-card-title">${g.name}</div>
+          <div class="game-card-meta">
+            ${g.gameType || 'Bài học'} · ${g.orderIndex ? `#${g.orderIndex}` : ''}
+          </div>
+        </div>
+        <div class="game-card-badge">
+          ${g.isPremium ? '<span class="badge badge-gold">💎 Premium</span>' : '<span class="badge badge-success">Miễn phí</span>'}
+        </div>
+      </a>`;
+            }).join('');
+        };
+
+        window.closePanel = function () {
+            document.getElementById('gamePanel').classList.remove('open');
+            document.getElementById('panelOverlay').classList.remove('open');
+        };
+
+        loadMaps();
+    </script>
+</body>
+
+</html>

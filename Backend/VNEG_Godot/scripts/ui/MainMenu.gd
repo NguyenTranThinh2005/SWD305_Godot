@@ -20,12 +20,6 @@ func _ready():
 	if btn_teams: btn_teams.pressed.connect(func(): get_tree().change_scene_to_file("res://scenes/TeamsMenu.tscn"))
 	if btn_profile: btn_profile.pressed.connect(func(): get_tree().change_scene_to_file("res://scenes/ProfileMenu.tscn"))
 	
-	# Add Logout button programmatically
-	var btn_logout = Button.new()
-	btn_logout.text = "Đăng xuất"
-	btn_logout.pressed.connect(_on_logout_pressed)
-	$VBoxContainer/DashboardNav.add_child(btn_logout)
-	
 	if AuthManager.is_logged_in():
 		welcome_label.text = "Xin chào, " + AuthManager.current_user.get("email", "Học sinh").split("@")[0] + "!"
 		_load_user_stats()
@@ -98,7 +92,3 @@ func _on_play_pressed() -> void:
 		await get_tree().create_timer(2.0).timeout
 		play_button.disabled = false
 		play_button.text = "Chơi game này"
-
-func _on_logout_pressed() -> void:
-	API.logout() # Fire and forget (it clears local session immediately)
-	get_tree().change_scene_to_file("res://scenes/LoginScreen.tscn")
