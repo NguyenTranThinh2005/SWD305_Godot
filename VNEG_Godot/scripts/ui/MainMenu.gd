@@ -100,5 +100,5 @@ func _on_play_pressed() -> void:
 		play_button.text = "Chơi game này"
 
 func _on_logout_pressed() -> void:
-	API.logout() # Fire and forget (it clears local session immediately)
+	await API.logout() # Wait for session cleanup
 	get_tree().change_scene_to_file("res://scenes/LoginScreen.tscn")
