@@ -51,7 +51,7 @@ func fetch(path: String, method: int = HTTPClient.METHOD_GET, body: Dictionary =
 # AUTH API
 # ==============================================================================
 
-func register(email: String, password: String, grade: int, region: String, avatar: String, phone: String = "") -> Dictionary:
+func register(email:String, password:String, phone:String, grade:int, region:String, avatar:String) -> Dictionary:
 	var payload = {
 		"email": email,
 		"password": password,
