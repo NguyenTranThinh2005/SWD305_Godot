@@ -102,3 +102,101 @@ func get_maps() -> Dictionary:
 	
 func get_grammar_progress() -> Dictionary:
 	return await fetch("/api/grammar/progress/me")
+
+# ==============================================================================
+# ADMIN ANALYTICS API
+# ==============================================================================
+func admin_get_user_stats() -> Dictionary:
+	return await fetch("/api/admin/analytics/user-stats")
+
+func admin_get_retention() -> Dictionary:
+	return await fetch("/api/admin/analytics/retention")
+
+func admin_get_demographics() -> Dictionary:
+	return await fetch("/api/admin/analytics/demographics")
+
+func admin_get_system_health() -> Dictionary:
+	return await fetch("/api/admin/analytics/system-health")
+
+func admin_get_content_reports() -> Dictionary:
+	return await fetch("/api/admin/analytics/content-reports")
+
+func admin_get_error_hotspots() -> Dictionary:
+	return await fetch("/api/admin/analytics/error-hotspots")
+
+# ==============================================================================
+# ADMIN CRUD API
+# ==============================================================================
+func admin_get_users() -> Dictionary:
+	return await fetch("/api/admin/users")
+
+func admin_set_user_active(user_id: int, is_active: bool) -> Dictionary:
+	return await fetch("/api/admin/users/" + str(user_id) + "/active", HTTPClient.METHOD_PATCH, {"isActive": is_active})
+
+func admin_set_user_role(user_id: int, role: String) -> Dictionary:
+	return await fetch("/api/admin/users/" + str(user_id) + "/role", HTTPClient.METHOD_PATCH, {"role": role})
+
+func admin_get_games() -> Dictionary:
+	return await fetch("/api/admin/games")
+
+func admin_create_game(dto: Dictionary) -> Dictionary:
+	return await fetch("/api/admin/games", HTTPClient.METHOD_POST, dto)
+
+func admin_update_game(game_id: int, dto: Dictionary) -> Dictionary:
+	return await fetch("/api/admin/games/" + str(game_id), HTTPClient.METHOD_PUT, dto)
+
+func admin_delete_game(game_id: int) -> Dictionary:
+	return await fetch("/api/admin/games/" + str(game_id), HTTPClient.METHOD_DELETE)
+
+func admin_get_grammar_topics() -> Dictionary:
+	return await fetch("/api/admin/grammar-topics")
+
+func admin_create_grammar_topic(dto: Dictionary) -> Dictionary:
+	return await fetch("/api/admin/grammar-topics", HTTPClient.METHOD_POST, dto)
+
+func admin_update_grammar_topic(topic_id: int, dto: Dictionary) -> Dictionary:
+	return await fetch("/api/admin/grammar-topics/" + str(topic_id), HTTPClient.METHOD_PUT, dto)
+
+func admin_delete_grammar_topic(topic_id: int) -> Dictionary:
+	return await fetch("/api/admin/grammar-topics/" + str(topic_id), HTTPClient.METHOD_DELETE)
+
+func admin_get_questions() -> Dictionary:
+	return await fetch("/api/admin/questions")
+
+func admin_create_question(dto: Dictionary) -> Dictionary:
+	return await fetch("/api/admin/questions", HTTPClient.METHOD_POST, dto)
+
+func admin_update_question(q_id: int, dto: Dictionary) -> Dictionary:
+	return await fetch("/api/admin/questions/" + str(q_id), HTTPClient.METHOD_PUT, dto)
+
+func admin_delete_question(q_id: int) -> Dictionary:
+	return await fetch("/api/admin/questions/" + str(q_id), HTTPClient.METHOD_DELETE)
+
+# ==============================================================================
+# STAFF API
+# ==============================================================================
+func staff_get_users(filters: Dictionary = {}) -> Dictionary:
+	var query = "/api/staff/users?"
+	for key in filters.keys():
+		query += str(key) + "=" + str(filters[key]) + "&"
+	return await fetch(query.rstrip("&"))
+
+func staff_toggle_user_status(user_id: int, is_active: bool, reason: String = "", action_type: String = "") -> Dictionary:
+	var body = {"isActive": is_active, "reason": reason, "actionType": action_type}
+	return await fetch("/api/staff/users/" + str(user_id) + "/status", HTTPClient.METHOD_PATCH, body)
+
+func staff_get_user_audit_log(user_id: int) -> Dictionary:
+	return await fetch("/api/staff/users/" + str(user_id) + "/audit-log")
+
+func staff_get_reports(status: String = "", page: int = 1) -> Dictionary:
+	var query = "/api/staff/reports?page=" + str(page)
+	if status != "":
+		query += "&status=" + status
+	return await fetch(query)
+
+func staff_get_report_detail(report_id: int) -> Dictionary:
+	return await fetch("/api/staff/reports/" + str(report_id))
+
+func staff_resolve_report(report_id: int, action: String, reason: String = "", status: String = "resolved") -> Dictionary:
+	var body = {"action": action, "reason": reason, "status": status}
+	return await fetch("/api/staff/reports/" + str(report_id) + "/resolve", HTTPClient.METHOD_PATCH, body)
