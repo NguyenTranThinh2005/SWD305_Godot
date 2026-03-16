@@ -8,10 +8,6 @@ namespace SWD305.DTO
         public DateTime? DueDate { get; set; }
     }
 
-    public class JoinTeamDto
-    {
-        public string InviteCode { get; set; } = null!;
-    }
 
     public class CompleteTaskDto
     {
