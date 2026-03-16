@@ -157,7 +157,7 @@ namespace SWD305.Controllers
         }
 
         [HttpPost("{taskId:int}/complete")]
-        public async Task<IActionResult> CompleteTask(int taskId, [FromBody] int sessionId)
+        public async Task<IActionResult> CompleteTask(int taskId, [FromBody] CompleteTaskDto dto)
         {
             var me = await GetMe();
             if (me == null) return Unauthorized("Invalid or expired token.");
@@ -168,7 +168,7 @@ namespace SWD305.Controllers
             if (progress == null) return BadRequest("Task not started");
             if (progress.Status == "completed") return Ok(new { message = "Already completed", reward = progress.Task.Reward });
 
-            var session = await _context.GameSessions.FindAsync(sessionId);
+            var session = await _context.GameSessions.FindAsync(dto.SessionId);
             if (session == null || session.UserId != me.Id) return NotFound("Invalid session");
 
             // Mark as complete regardless of score for now

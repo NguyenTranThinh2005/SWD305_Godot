@@ -122,6 +122,4 @@ func start_team_task(task_id: int) -> Dictionary:
 	return await fetch("/api/tasks/" + str(task_id) + "/start", HTTPClient.METHOD_POST)
 
 func complete_team_task(task_id: int, session_id: int) -> Dictionary:
-	# Gửi Session Id dạng chuỗi/số trực tiếp trong body
-	return await fetch("/api/tasks/" + str(task_id) + "/complete", HTTPClient.METHOD_POST, session_id)
-
+	return await fetch("/api/tasks/" + str(task_id) + "/complete", HTTPClient.METHOD_POST, {"sessionId": session_id})
