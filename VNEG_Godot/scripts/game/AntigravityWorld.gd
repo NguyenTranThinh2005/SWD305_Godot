@@ -87,8 +87,9 @@ func _on_answer_selected(q_id: int, selected_index: int, correct_index: int) -> 
 			child.disabled = true
 		
 	var is_correct = (selected_index == correct_index)
-	# GameManager.record_answer(q_id, selected_index, is_correct)
-	
+	var q_data = GameManager.game_questions[q_id]
+	var real_q_id = int(q_data.get("id", 0))
+	GameManager.record_answer(real_q_id, selected_index, is_correct)
 	if is_correct:
 		choices_box.get_child(selected_index).modulate = Color(0, 1, 0)
 		GameManager.stars += 10
@@ -122,14 +123,22 @@ func _end_game() -> void:
 	for child in choices_box.get_children():
 		child.queue_free()
 		
-	var final_msg = "Kết quả Offline: " + str(GameManager.stars) + " điểm!\nCảm ơn bạn đã thi tài!"
+	var final_msg = "Kết quả: " + str(GameManager.stars) + " điểm!\nĐang lưu kết quả..."
 	question_label.text = final_msg
+	
+	if GameManager.current_session_id != "":
+		await API.submit_answers(GameManager.current_session_id, GameManager.get_submission_data())
+		if GameManager.current_task_id != 0:
+			await API.complete_team_task(GameManager.current_task_id, int(GameManager.current_session_id))
+			
+	question_label.text = "Kết quả: " + str(GameManager.stars) + " điểm!\nCảm ơn bạn đã thi tài!"
 	
 	var btn_exit = Button.new()
 	btn_exit.text = "Về Dashboard"
 	btn_exit.pressed.connect(func(): 
 		# Reset gravity before leaving
 		PhysicsServer2D.area_set_param(get_world_2d().space, PhysicsServer2D.AREA_PARAM_GRAVITY_VECTOR, Vector2(0, 1))
+		GameManager.clear_session()
 		get_tree().change_scene_to_file("res://scenes/MainMenu.tscn")
 	)
 	choices_box.add_child(btn_exit)
