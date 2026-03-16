@@ -102,3 +102,26 @@ func get_maps() -> Dictionary:
 	
 func get_grammar_progress() -> Dictionary:
 	return await fetch("/api/grammar/progress/me")
+
+# ==============================================================================
+# TEAM TASKS (STUDY & TEST) API
+# ==============================================================================
+
+func get_team_tasks(team_id: int) -> Dictionary:
+	return await fetch("/api/tasks/team/" + str(team_id))
+
+func create_team_task(team_id: int, game_id: int, reward: String = "100_coins") -> Dictionary:
+	var payload = {
+		"teamId": team_id,
+		"gameId": game_id,
+		"reward": reward
+	}
+	return await fetch("/api/tasks", HTTPClient.METHOD_POST, payload)
+
+func start_team_task(task_id: int) -> Dictionary:
+	return await fetch("/api/tasks/" + str(task_id) + "/start", HTTPClient.METHOD_POST)
+
+func complete_team_task(task_id: int, session_id: int) -> Dictionary:
+	# Gửi Session Id dạng chuỗi/số trực tiếp trong body
+	return await fetch("/api/tasks/" + str(task_id) + "/complete", HTTPClient.METHOD_POST, session_id)
+
