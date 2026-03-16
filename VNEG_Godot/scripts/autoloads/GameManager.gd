@@ -15,8 +15,8 @@ var coins: int = 0
 var stars: int = 0
 
 ## Khởi tạo trạng thái game mới
-func start_session(session_id: String, game_id: int, task_id: int = 0) -> void:
-	current_session_id = session_id
+func start_session(session_id: Variant, game_id: int, task_id: int = 0) -> void:
+	current_session_id = int(session_id)
 	current_game_id = game_id
 	current_task_id = task_id
 	game_questions.clear()
