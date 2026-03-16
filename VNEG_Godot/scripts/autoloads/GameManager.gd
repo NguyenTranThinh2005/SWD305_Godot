@@ -4,7 +4,7 @@ extends Node
 ## Autoload (Singleton) quản lý trạng thái của ván game hiện tại.
 ## Lưu trữ ID session, bộ câu hỏi, tính điểm, mạng HP.
 
-var current_session_id: String = ""
+var current_session_id: int = 0
 var current_game_id: int = 0
 var game_questions: Array = []
 var answered_questions: Array = []
@@ -14,7 +14,7 @@ var coins: int = 0
 var stars: int = 0
 
 ## Khởi tạo trạng thái game mới
-func start_session(session_id: String, game_id: int) -> void:
+func start_session(session_id: int, game_id: int) -> void:
 	current_session_id = session_id
 	current_game_id = game_id
 	game_questions.clear()
@@ -25,16 +25,16 @@ func start_session(session_id: String, game_id: int) -> void:
 
 ## Xóa trạng thái game (sau khi kết thúc hoặc thoát)
 func clear_session() -> void:
-	current_session_id = ""
+	current_session_id = 0
 	current_game_id = 0
 	game_questions.clear()
 	answered_questions.clear()
 
 ## Ghi nhận một câu trả lời
-func record_answer(question_id: int, selected_index: int, is_correct: bool) -> void:
+func record_answer(question_id: int, raw_answer: Variant, is_correct: bool) -> void:
 	answered_questions.append({
 		"questionId": question_id,
-		"selectedAnswerId": selected_index
+		"selectedAnswer": raw_answer
 	})
 	
 	if is_correct:

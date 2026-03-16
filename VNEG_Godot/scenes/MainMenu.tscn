@@ -1,8 +1,8 @@
-[gd_scene load_steps=2 format=3 uid="uid://mainmenu1234"]
+[gd_scene format=3 uid="uid://mainmenu1234"]
 
-[ext_resource type="Script" path="res://scripts/ui/MainMenu.gd" id="1_mainmenu"]
+[ext_resource type="Script" uid="uid://sqy1g0gejwiq" path="res://scripts/ui/MainMenu.gd" id="1_mainmenu"]
 
-[node name="MainMenu" type="Control"]
+[node name="MainMenu" type="Control" unique_id=1350192781]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -11,7 +11,7 @@ grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_mainmenu")
 
-[node name="VBoxContainer" type="VBoxContainer" parent="."]
+[node name="VBoxContainer" type="VBoxContainer" parent="." unique_id=242139922]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -23,55 +23,55 @@ offset_bottom = -50.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="Header" type="HBoxContainer" parent="VBoxContainer"]
+[node name="Header" type="HBoxContainer" parent="VBoxContainer" unique_id=1373622334]
 layout_mode = 2
 
-[node name="WelcomeLabel" type="Label" parent="VBoxContainer/Header"]
+[node name="WelcomeLabel" type="Label" parent="VBoxContainer/Header" unique_id=713022663]
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_font_sizes/font_size = 24
 text = "Xin chào!"
 
-[node name="ScoreLabel" type="Label" parent="VBoxContainer/Header"]
+[node name="ScoreLabel" type="Label" parent="VBoxContainer/Header" unique_id=1897660148]
 layout_mode = 2
 theme_override_font_sizes/font_size = 24
 text = "Điểm: 0"
 
-[node name="DashboardNav" type="HBoxContainer" parent="VBoxContainer"]
+[node name="DashboardNav" type="HBoxContainer" parent="VBoxContainer" unique_id=1967504261]
 layout_mode = 2
 alignment = 1
 
-[node name="BtnTeams" type="Button" parent="VBoxContainer/DashboardNav"]
+[node name="BtnTeams" type="Button" parent="VBoxContainer/DashboardNav" unique_id=1289734437]
 layout_mode = 2
 text = "Quản lý Nhóm"
 
-[node name="BtnProfile" type="Button" parent="VBoxContainer/DashboardNav"]
+[node name="BtnProfile" type="Button" parent="VBoxContainer/DashboardNav" unique_id=1106179842]
 layout_mode = 2
 text = "Hồ sơ & Ngữ pháp"
 
-[node name="HSeparator" type="HSeparator" parent="VBoxContainer"]
+[node name="HSeparator" type="HSeparator" parent="VBoxContainer" unique_id=1596397929]
 layout_mode = 2
 theme_override_constants/separation = 20
 
-[node name="MapContainer" type="VBoxContainer" parent="VBoxContainer"]
+[node name="MapContainer" type="VBoxContainer" parent="VBoxContainer" unique_id=1301043756]
 layout_mode = 2
 size_flags_vertical = 3
 
-[node name="Label" type="Label" parent="VBoxContainer/MapContainer"]
+[node name="Label" type="Label" parent="VBoxContainer/MapContainer" unique_id=1669596912]
 layout_mode = 2
 theme_override_font_sizes/font_size = 20
 text = "Chọn Hành Tinh (Map)"
 
-[node name="GamesContainer" type="VBoxContainer" parent="VBoxContainer"]
+[node name="GamesContainer" type="VBoxContainer" parent="VBoxContainer" unique_id=688560809]
 layout_mode = 2
 size_flags_vertical = 3
 
-[node name="Label" type="Label" parent="VBoxContainer/GamesContainer"]
+[node name="Label" type="Label" parent="VBoxContainer/GamesContainer" unique_id=2061831705]
 layout_mode = 2
 theme_override_font_sizes/font_size = 20
 text = "Chọn Trò Chơi"
 
-[node name="PlayButton" type="Button" parent="VBoxContainer/GamesContainer"]
+[node name="PlayButton" type="Button" parent="VBoxContainer/GamesContainer" unique_id=1463977053]
 layout_mode = 2
 theme_override_font_sizes/font_size = 24
 disabled = true

@@ -1,95 +1,154 @@
-[gd_scene load_steps=2 format=3 uid="uid://teamsmenu1234"]
+[gd_scene format=3 uid="uid://dwm5gepnl8k22"]
 
-[ext_resource type="Script" path="res://scripts/ui/TeamsMenu.gd" id="1_teams"]
+[ext_resource type="Script" uid="uid://dr7dbp74i5l55" path="res://scripts/ui/LoginScreen.gd" id="1_pvpg7"]
 
-[node name="TeamsMenu" type="Control"]
+[node name="LoginScreen" type="Control" unique_id=1256462904]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-script = ExtResource("1_teams")
+script = ExtResource("1_pvpg7")
 
-[node name="BackButton" type="Button" parent="."]
-layout_mode = 0
-offset_left = 20.0
-offset_top = 20.0
-offset_right = 120.0
-offset_bottom = 60.0
-text = "Quay lại"
-
-[node name="HBox" type="HBoxContainer" parent="."]
+[node name="CenterContainer" type="CenterContainer" parent="." unique_id=1008370625]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = 50.0
-offset_top = 80.0
-offset_right = -50.0
-offset_bottom = -50.0
 grow_horizontal = 2
 grow_vertical = 2
-theme_override_constants/separation = 50
 
-[node name="LeftPanel" type="VBoxContainer" parent="HBox"]
+[node name="VBoxContainer" type="VBoxContainer" parent="CenterContainer" unique_id=79006943]
+custom_minimum_size = Vector2(350, 0)
+layout_mode = 2
+theme_override_constants/separation = 15
+
+[node name="Title" type="Label" parent="CenterContainer/VBoxContainer" unique_id=1923008452]
+layout_mode = 2
+theme_override_font_sizes/font_size = 32
+text = "VNEG System"
+horizontal_alignment = 1
+
+[node name="LoginBox" type="VBoxContainer" parent="CenterContainer/VBoxContainer" unique_id=40133120]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="EmailInput" type="LineEdit" parent="CenterContainer/VBoxContainer/LoginBox" unique_id=1605048763]
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+placeholder_text = "Email"
+
+[node name="PasswordInput" type="LineEdit" parent="CenterContainer/VBoxContainer/LoginBox" unique_id=1206515009]
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+placeholder_text = "Mật khẩu"
+secret = true
+
+[node name="LoginButton" type="Button" parent="CenterContainer/VBoxContainer/LoginBox" unique_id=442169020]
+custom_minimum_size = Vector2(0, 45)
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = "Đăng nhập"
+
+[node name="ToRegisterButton" type="LinkButton" parent="CenterContainer/VBoxContainer/LoginBox" unique_id=1026809634]
+layout_mode = 2
+size_flags_horizontal = 4
+text = "Chưa có tài khoản? Đăng ký ngay"
+
+[node name="RegisterBox" type="VBoxContainer" parent="CenterContainer/VBoxContainer" unique_id=1243013513]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="RegEmailInput" type="LineEdit" parent="CenterContainer/VBoxContainer/RegisterBox" unique_id=1779843256]
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+placeholder_text = "Email đăng ký"
+
+[node name="RegPasswordInput" type="LineEdit" parent="CenterContainer/VBoxContainer/RegisterBox" unique_id=1348053406]
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+placeholder_text = "Mật khẩu"
+secret = true
+
+[node name="PhoneInput" type="LineEdit" parent="CenterContainer/VBoxContainer/RegisterBox" unique_id=1219243444]
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+placeholder_text = "Số điện thoại"
+
+[node name="HBoxGrade" type="HBoxContainer" parent="CenterContainer/VBoxContainer/RegisterBox" unique_id=523781204]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="CenterContainer/VBoxContainer/RegisterBox/HBoxGrade" unique_id=997915835]
+layout_mode = 2
+text = "Khối lớp: "
+
+[node name="GradeInput" type="OptionButton" parent="CenterContainer/VBoxContainer/RegisterBox/HBoxGrade" unique_id=1111275911]
 layout_mode = 2
 size_flags_horizontal = 3
+selected = 0
+item_count = 12
+popup/item_0/text = "Lớp 1"
+popup/item_0/id = 0
+popup/item_1/text = "Lớp 2"
+popup/item_1/id = 1
+popup/item_2/text = "Lớp 3"
+popup/item_2/id = 2
+popup/item_3/text = "Lớp 4"
+popup/item_3/id = 3
+popup/item_4/text = "Lớp 5"
+popup/item_4/id = 4
+popup/item_5/text = "Lớp 6"
+popup/item_5/id = 5
+popup/item_6/text = "Lớp 7"
+popup/item_6/id = 6
+popup/item_7/text = "Lớp 8"
+popup/item_7/id = 7
+popup/item_8/text = "Lớp 9"
+popup/item_8/id = 8
+popup/item_9/text = "Lớp 10"
+popup/item_9/id = 9
+popup/item_10/text = "Lớp 11"
+popup/item_10/id = 10
+popup/item_11/text = "Lớp 12"
+popup/item_11/id = 11
 
-[node name="Label" type="Label" parent="HBox/LeftPanel"]
+[node name="HBoxRegion" type="HBoxContainer" parent="CenterContainer/VBoxContainer/RegisterBox" unique_id=293633897]
 layout_mode = 2
-theme_override_font_sizes/font_size = 24
-text = "Nhóm của tôi"
 
-[node name="ScrollContainer" type="ScrollContainer" parent="HBox/LeftPanel"]
+[node name="Label" type="Label" parent="CenterContainer/VBoxContainer/RegisterBox/HBoxRegion" unique_id=1684656869]
 layout_mode = 2
-size_flags_vertical = 3
+text = "Vùng miền: "
 
-[node name="TeamList" type="VBoxContainer" parent="HBox/LeftPanel/ScrollContainer"]
+[node name="RegionInput" type="OptionButton" parent="CenterContainer/VBoxContainer/RegisterBox/HBoxRegion" unique_id=1936906827]
 layout_mode = 2
 size_flags_horizontal = 3
-size_flags_vertical = 3
+selected = 0
+item_count = 3
+popup/item_0/text = "Miền Bắc"
+popup/item_0/id = 0
+popup/item_1/text = "Miền Trung"
+popup/item_1/id = 1
+popup/item_2/text = "Miền Nam"
+popup/item_2/id = 2
 
-[node name="RightPanel" type="VBoxContainer" parent="HBox"]
+[node name="SubmitRegisterButton" type="Button" parent="CenterContainer/VBoxContainer/RegisterBox" unique_id=1872715683]
+custom_minimum_size = Vector2(0, 45)
 layout_mode = 2
-size_flags_horizontal = 3
-theme_override_constants/separation = 30
+theme_override_font_sizes/font_size = 18
+text = "Xác nhận Đăng ký"
 
-[node name="JoinBox" type="VBoxContainer" parent="HBox/RightPanel"]
+[node name="ToLoginButton" type="LinkButton" parent="CenterContainer/VBoxContainer/RegisterBox" unique_id=588306155]
 layout_mode = 2
+size_flags_horizontal = 4
+text = "Đã có tài khoản? Đăng nhập"
 
-[node name="Label" type="Label" parent="HBox/RightPanel/JoinBox"]
+[node name="StatusLabel" type="Label" parent="CenterContainer/VBoxContainer" unique_id=191773107]
 layout_mode = 2
-theme_override_font_sizes/font_size = 20
-text = "Tham gia bằng Code"
-
-[node name="CodeInput" type="LineEdit" parent="HBox/RightPanel/JoinBox"]
-layout_mode = 2
-placeholder_text = "Nhập mã Mời"
-
-[node name="JoinButton" type="Button" parent="HBox/RightPanel/JoinBox"]
-layout_mode = 2
-text = "Tham Gia"
-
-[node name="CreateBox" type="VBoxContainer" parent="HBox/RightPanel"]
-layout_mode = 2
-
-[node name="Label" type="Label" parent="HBox/RightPanel/CreateBox"]
-layout_mode = 2
-theme_override_font_sizes/font_size = 20
-text = "Tạo nhóm mới"
-
-[node name="NameInput" type="LineEdit" parent="HBox/RightPanel/CreateBox"]
-layout_mode = 2
-placeholder_text = "Tên nhóm"
-
-[node name="DescInput" type="LineEdit" parent="HBox/RightPanel/CreateBox"]
-layout_mode = 2
-placeholder_text = "Mô tả nhóm"
-
-[node name="CreateButton" type="Button" parent="HBox/RightPanel/CreateBox"]
-layout_mode = 2
-text = "Tạo Nhóm"
-
-[node name="StatusLabel" type="Label" parent="HBox/RightPanel"]
-layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 16
+horizontal_alignment = 1
+autowrap_mode = 2
