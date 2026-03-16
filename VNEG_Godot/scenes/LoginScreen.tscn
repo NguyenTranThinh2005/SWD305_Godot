@@ -3,8 +3,9 @@
 [ext_resource type="Script" path="res://scripts/ui/LoginScreen.gd" id="1_loginscreen"]
 [ext_resource type="Theme" uid="uid://d3u6x0y8wkpjk" path="res://assets/ui/premium_theme.tres" id="2_theme"]
 [ext_resource type="Texture2D" uid="uid://df58o622g0c5j" path="res://assets/bg/space_bg.tres" id="3_bg"]
+>>>>>>> main
 
-[node name="LoginScreen" type="Control"]
+[node name="LoginScreen" type="Control" unique_id=1256462904]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -110,11 +111,13 @@ layout_mode = 2
 text = "Khối lớp:"
 
 [node name="GradeInput" type="OptionButton" parent="CenterContainer/PanelContainer/VBoxContainer/RegisterBox/HBoxGrade"]
+
 layout_mode = 2
 size_flags_horizontal = 3
 selected = 0
 item_count = 12
 popup/item_0/text = "Lớp 1"
+popup/item_0/id = 0
 popup/item_1/text = "Lớp 2"
 popup/item_1/id = 1
 popup/item_2/text = "Lớp 3"
@@ -147,11 +150,13 @@ layout_mode = 2
 text = "Vùng miền:"
 
 [node name="RegionInput" type="OptionButton" parent="CenterContainer/PanelContainer/VBoxContainer/RegisterBox/HBoxRegion"]
+
 layout_mode = 2
 size_flags_horizontal = 3
 selected = 0
 item_count = 3
 popup/item_0/text = "Miền Bắc"
+popup/item_0/id = 0
 popup/item_1/text = "Miền Trung"
 popup/item_1/id = 1
 popup/item_2/text = "Miền Nam"

@@ -4,7 +4,7 @@
 [ext_resource type="Theme" uid="uid://d3u6x0y8wkpjk" path="res://assets/ui/premium_theme.tres" id="2_theme"]
 [ext_resource type="Texture2D" uid="uid://df58o622g0c5j" path="res://assets/bg/space_bg.tres" id="3_bg"]
 
-[node name="TeamsMenu" type="Control"]
+[node name="LoginScreen" type="Control" unique_id=1256462904]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -80,7 +80,7 @@ text = "👥 Nhóm của tôi"
 
 [node name="ScrollContainer" type="ScrollContainer" parent="VBoxContainer/MainPanel/HBox/LeftPanel"]
 layout_mode = 2
-size_flags_vertical = 3
+text = "Vùng miền: "
 
 [node name="TeamList" type="VBoxContainer" parent="VBoxContainer/MainPanel/HBox/LeftPanel/ScrollContainer"]
 layout_mode = 2
@@ -90,8 +90,8 @@ theme_override_constants/separation = 10
 
 [node name="RightPanel" type="VBoxContainer" parent="VBoxContainer/MainPanel/HBox"]
 layout_mode = 2
-size_flags_horizontal = 3
-theme_override_constants/separation = 30
+theme_override_font_sizes/font_size = 18
+text = "Xác nhận Đăng ký"
 
 [node name="JoinBox" type="VBoxContainer" parent="VBoxContainer/MainPanel/HBox/RightPanel"]
 layout_mode = 2

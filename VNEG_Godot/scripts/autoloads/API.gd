@@ -43,8 +43,18 @@ func fetch(path: String, method: int = HTTPClient.METHOD_GET, body: Dictionary =
 		var parse_err = json.parse(res_body_bytes.get_string_from_utf8())
 		if parse_err == OK:
 			data = json.data
+		else:
+			# Fallback if the body is a plain text string
+			data = res_body_bytes.get_string_from_utf8()
 			
 	var is_ok = (res_code >= 200 and res_code < 300)
+	
+	print("API Response [", method, "] ", url)
+	print("-> Code: ", res_code)
+	print("-> Data: ", data)
+	
+	# If the backend returned a string and it's not JSON, Godot's JSON.parse might fail 
+	# or it might return the string directly. We handled it above.
 	return { "ok": is_ok, "status": res_code, "data": data }
 
 # ==============================================================================
@@ -86,13 +96,13 @@ func start_game(user_id: int, game_id: int) -> Dictionary:
 	var payload = { "userId": user_id, "gameId": game_id }
 	return await fetch("/api/game/start", HTTPClient.METHOD_POST, payload)
 
-func get_questions(session_id: String) -> Dictionary:
-	return await fetch("/api/game/" + session_id + "/questions")
+func get_questions(session_id: int) -> Dictionary:
+	return await fetch("/api/game/" + str(session_id) + "/questions")
 
-func submit_answers(session_id: String, answers: Array) -> Dictionary:
+func submit_answers(session_id: int, answers: Array) -> Dictionary:
 	# answers: Array của Dictionary -> [{ "questionId": 1, "selectedAnswerId": 0 }, ...]
 	var payload = { "answers": answers }
-	return await fetch("/api/game/" + session_id + "/submit", HTTPClient.METHOD_POST, payload)
+	return await fetch("/api/game/" + str(session_id) + "/submit", HTTPClient.METHOD_POST, payload)
 
 # ==============================================================================
 # MAPPING CÁC API KHÁC THEO NHU CẦU...
