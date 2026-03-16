@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+    th:replace="~{layout :: layout(~{::title}, ~{::content}, ~{::extraStyle}, ~{::extraScript})}">
+
+<head>
+    <title th:fragment="title">Users</title>
+    <th:block th:fragment="extraStyle"></th:block>
+</head>
+
+<body>
+    <th:block th:fragment="content">
+
+        <div class="filter-row">
+            <form method="get" action="/users" style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+                <select name="role" class="form-control" style="width:auto;">
+                    <option value="">All Roles</option>
+                    <option value="user" th:selected="${selectedRole == 'user'}">Player</option>
+                    <option value="team_owner" th:selected="${selectedRole == 'team_owner'}">Team Owner</option>
+                    <option value="staff" th:selected="${selectedRole == 'staff'}">Staff</option>
+                    <option value="admin" th:selected="${selectedRole == 'admin'}">Admin</option>
+                </select>
+                <select name="status" class="form-control" style="width:auto;">
+                    <option value="">All Status</option>
+                    <option value="suspended" th:selected="${selectedStatus == 'suspended'}">Suspended</option>
+                </select>
+                <button type="submit" class="btn btn-primary btn-sm"><i class="fas fa-filter"></i> Filter</button>
+                <a href="/users" class="btn btn-ghost btn-sm">Reset</a>
+            </form>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h3><i class="fas fa-users" style="color:var(--accent); margin-right:8px;"></i>
+                    User Management
+                    <span style="color:var(--text-muted); font-weight:400; font-size:13px;"
+                        th:text="'(' + ${totalItems} + ' users)'"></span>
+                </h3>
+            </div>
+            <div class="card-body">
+                <table th:if="${!users.empty}">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Email</th>
+                            <th>Phone</th>
+                            <th>Grade</th>
+                            <th>Region</th>
+                            <th>Role</th>
+                            <th>Status</th>
+                            <th>Joined</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="u : ${users}">
+                            <td style="color:var(--text-muted);">#<span th:text="${u.id}"></span></td>
+                            <td th:text="${u.email}"></td>
+                            <td th:text="${u.phone ?: '—'}" style="color:var(--text-muted);"></td>
+                            <td th:text="${u.grade != null ? u.grade : '—'}"></td>
+                            <td th:text="${u.region ?: '—'}"></td>
+                            <td><span class="badge" th:classappend="'badge-' + ${u.role}" th:text="${u.role}"></span>
+                            </td>
+                            <td>
+                                <span class="badge badge-active" th:if="${u.isActive == true}">Active</span>
+                                <span class="badge badge-inactive" th:unless="${u.isActive == true}">Suspended</span>
+                            </td>
+                            <td style="color:var(--text-muted); font-size:12px;"
+                                th:text="${u.createdAt != null ? #temporals.format(u.createdAt,'dd/MM/yyyy') : '—'}">
+                            </td>
+                            <td>
+                                <div style="display:flex; gap:6px;">
+                                    <a th:href="@{/users/{id}(id=${u.id})}" class="btn btn-ghost btn-sm">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                    <form th:if="${u.isActive == true}" th:action="@{/users/{id}/suspend(id=${u.id})}"
+                                        method="post" style="display:inline;">
+                                        <input type="hidden" th:name="${_csrf.parameterName}"
+                                            th:value="${_csrf.token}" />
+                                        <button type="submit" class="btn btn-danger btn-sm"
+                                            onclick="return confirm('Suspend this user?')">
+                                            <i class="fas fa-ban"></i>
+                                        </button>
+                                    </form>
+                                    <form th:unless="${u.isActive == true}"
+                                        th:action="@{/users/{id}/activate(id=${u.id})}" method="post"
+                                        style="display:inline;">
+                                        <input type="hidden" th:name="${_csrf.parameterName}"
+                                            th:value="${_csrf.token}" />
+                                        <button type="submit" class="btn btn-success btn-sm">
+                                            <i class="fas fa-check"></i>
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+                <div class="pagination" th:if="${totalPages > 1}"
+                    style="display:flex; justify-content:center; gap:5px; margin-top:15px; padding-bottom:10px;">
+                    <th:block th:each="i : ${#numbers.sequence(1, totalPages)}">
+                        <a th:href="@{/users(page=${i}, role=${selectedRole}, status=${selectedStatus})}"
+                            class="btn btn-sm" th:classappend="${currentPage == i ? 'btn-primary' : 'btn-ghost'}"
+                            th:text="${i}"></a>
+                    </th:block>
+                </div>
+                <div class="empty-state" th:if="${users.empty}">
+                    <i class="fas fa-users-slash"></i>
+                    <p>No users found for the selected filter.</p>
+                </div>
+            </div>
+        </div>
+
+    </th:block>
+    <th:block th:fragment="extraScript"></th:block>
+</body>
+
+</html>

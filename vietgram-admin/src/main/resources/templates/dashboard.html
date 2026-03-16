@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+    th:replace="~{layout :: layout(~{::title}, ~{::content}, ~{::extraStyle}, ~{::extraScript})}">
+
+<head>
+    <title th:fragment="title">Dashboard</title>
+    <th:block th:fragment="extraStyle"></th:block>
+</head>
+
+<body>
+    <th:block th:fragment="content">
+
+        <!-- Thay layout :: pageTitle('Dashboard') bằng cách truyền vào Controller, ở đây xoá ref lỗi -->
+        <input type="hidden" name="pageTitle" value="Dashboard">
+
+        <!-- Stat Cards -->
+        <div class="stat-grid">
+            <div class="stat-card">
+                <div class="stat-icon purple"><i class="fas fa-users"></i></div>
+                <div class="stat-info">
+                    <div class="stat-value" th:text="${totalUsers}">0</div>
+                    <div class="stat-label">Total Users</div>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon green"><i class="fas fa-user-check"></i></div>
+                <div class="stat-info">
+                    <div class="stat-value" th:text="${activeUsers}">0</div>
+                    <div class="stat-label">Active Users</div>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon red"><i class="fas fa-user-slash"></i></div>
+                <div class="stat-info">
+                    <div class="stat-value" th:text="${suspendedUsers}">0</div>
+                    <div class="stat-label">Suspended Users</div>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon yellow"><i class="fas fa-flag"></i></div>
+                <div class="stat-info">
+                    <div class="stat-value" th:text="${pendingReports}">0</div>
+                    <div class="stat-label">Pending Reports</div>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon cyan"><i class="fas fa-gamepad"></i></div>
+                <div class="stat-info">
+                    <div class="stat-value" th:text="${totalGames}">0</div>
+                    <div class="stat-label">Total Games</div>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon purple"><i class="fas fa-play-circle"></i></div>
+                <div class="stat-info">
+                    <div class="stat-value" th:text="${todaySessions}">0</div>
+                    <div class="stat-label">Sessions Today</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tables row -->
+        <div class="grid-2">
+
+            <!-- Pending Reports -->
+            <div class="card">
+                <div class="card-header">
+                    <h3><i class="fas fa-flag" style="color: var(--warning); margin-right:8px;"></i>Pending Reports</h3>
+                    <a href="/reports?status=pending" class="btn btn-ghost btn-sm">View All</a>
+                </div>
+                <div class="card-body">
+                    <table th:if="${!pendingReportsList.empty}">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Type</th>
+                                <th>User</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="r : ${pendingReportsList}">
+                                <td>#<span th:text="${r.id}"></span></td>
+                                <td><span class="badge" th:classappend="'badge-' + ${r.type}"
+                                        th:text="${r.type}"></span></td>
+                                <td th:text="${r.userId}"></td>
+                                <td>
+                                    <a th:href="@{/reports/{id}(id=${r.id})}" class="btn btn-ghost btn-sm">Review</a>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <div class="empty-state" th:unless="${!pendingReportsList.empty}">
+                        <i class="fas fa-check-circle" style="color: var(--success);"></i>
+                        <p>No pending reports</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Logs -->
+            <div class="card">
+                <div class="card-header">
+                    <h3><i class="fas fa-terminal" style="color: var(--accent2); margin-right:8px;"></i>Recent System
+                        Logs</h3>
+                    <a href="/logs" class="btn btn-ghost btn-sm">View All</a>
+                </div>
+                <div class="card-body">
+                    <table th:if="${!recentLogs.empty}">
+                        <thead>
+                            <tr>
+                                <th>User</th>
+                                <th>Action</th>
+                                <th>Time</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="log : ${recentLogs}">
+                                <td th:text="${log.userId}"></td>
+                                <td th:text="${log.action}"></td>
+                                <td style="color: var(--text-muted); font-size:12px;"
+                                    th:text="${#temporals.format(log.createdAt, 'HH:mm dd/MM')}"></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <div class="empty-state" th:unless="${!recentLogs.empty}">
+                        <i class="fas fa-inbox"></i>
+                        <p>No logs yet</p>
+                    </div>
+                </div>
+            </div>
+
+        </div><!-- .grid-2 -->
+
+    </th:block>
+    <th:block th:fragment="extraScript"></th:block>
+</body>
+
+</html>

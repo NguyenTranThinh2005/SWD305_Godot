@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+    th:replace="~{layout :: layout(~{::title}, ~{::content}, ~{::extraStyle}, ~{::extraScript})}">
+
+<head>
+    <title th:fragment="title">Game Management</title>
+    <th:block th:fragment="extraStyle"></th:block>
+</head>
+
+<body>
+    <th:block th:fragment="content">
+
+        <div style="margin-bottom:20px;">
+            <a href="/admin/games/new" class="btn btn-primary">
+                <i class="fas fa-plus"></i> Add New Game
+            </a>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h3><i class="fas fa-gamepad" style="color:var(--accent); margin-right:8px;"></i>Game Content Management
+                </h3>
+            </div>
+            <div class="card-body">
+                <table th:if="${!games.empty}">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Name</th>
+                            <th>Type</th>
+                            <th>Map ID</th>
+                            <th>Order</th>
+                            <th>Premium</th>
+                            <th>Active</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="g : ${games}">
+                            <td>#<span th:text="${g.id}"></span></td>
+                            <td th:text="${g.name}"></td>
+                            <td>
+                                <span style="font-family:monospace; font-size:11px; background:rgba(255,255,255,0.06);
+                           padding:3px 8px; border-radius:6px;" th:text="${g.gameType}"></span>
+                            </td>
+                            <td th:text="${g.mapId}"></td>
+                            <td th:text="${g.orderIndex}"></td>
+                            <td>
+                                <span class="badge"
+                                    th:classappend="${g.isPremium == true ? 'badge-warning' : 'badge-primary'}"
+                                    th:text="${g.isPremium == true ? 'Premium' : 'Free'}"></span>
+                            </td>
+                            <td>
+                                <span class="badge"
+                                    th:classappend="${g.isActive == true ? 'badge-active' : 'badge-inactive'}"
+                                    th:text="${g.isActive == true ? 'Active' : 'Inactive'}"></span>
+                            </td>
+                            <td>
+                                <div style="display:flex; gap:6px;">
+                                    <a th:href="@{/admin/games/{id}/edit(id=${g.id})}" class="btn btn-ghost btn-sm">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    <form th:action="@{/admin/games/{id}/toggle(id=${g.id})}" method="post"
+                                        style="display:inline;">
+                                        <input type="hidden" th:name="${_csrf.parameterName}"
+                                            th:value="${_csrf.token}" />
+                                        <button type="submit" class="btn btn-warning btn-sm">
+                                            <i class="fas fa-toggle-on"></i>
+                                        </button>
+                                    </form>
+                                    <form th:action="@{/admin/games/{id}/delete(id=${g.id})}" method="post"
+                                        style="display:inline;">
+                                        <input type="hidden" th:name="${_csrf.parameterName}"
+                                            th:value="${_csrf.token}" />
+                                        <button type="submit" class="btn btn-danger btn-sm"
+                                            onclick="return confirm('Delete this game?')">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+                <div class="empty-state" th:if="${games.empty}">
+                    <i class="fas fa-gamepad"></i>
+                    <p>No games found. <a href="/admin/games/new" style="color:var(--accent);">Create one</a>.</p>
+                </div>
+            </div>
+        </div>
+
+    </th:block>
+    <th:block th:fragment="extraScript"></th:block>
+</body>
+
+</html>

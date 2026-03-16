@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+    th:replace="~{layout :: layout(~{::title}, ~{::content}, ~{::extraStyle}, ~{::extraScript})}">
+
+<head>
+    <title th:fragment="title">Game Form</title>
+    <th:block th:fragment="extraStyle"></th:block>
+</head>
+
+<body>
+    <th:block th:fragment="content">
+
+        <div style="margin-bottom:20px;">
+            <a href="/admin/games" class="btn btn-ghost"><i class="fas fa-arrow-left"></i> Back to Games</a>
+        </div>
+
+        <div class="card" style="max-width: 700px;">
+            <div class="card-header">
+                <h3 th:text="${game.id != null ? 'Edit Game #' + game.id : 'New Game'}"></h3>
+            </div>
+            <div class="card-body" style="padding:28px;">
+                <form action="/admin/games/save" method="post">
+                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                    <input type="hidden" name="id" th:value="${game.id}" />
+
+                    <div class="form-group">
+                        <label class="form-label">Game Name</label>
+                        <input type="text" name="name" class="form-control" th:value="${game.name}"
+                            placeholder="e.g. Lesson 1 - Danh từ" required />
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Game Type</label>
+                        <select name="gameType" class="form-control">
+                            <option value="grammar" th:selected="${game.gameType == 'grammar'}">grammar</option>
+                            <option value="spelling" th:selected="${game.gameType == 'spelling'}">spelling</option>
+                            <option value="image_sentence" th:selected="${game.gameType == 'image_sentence'}">
+                                image_sentence</option>
+                            <option value="punctuation" th:selected="${game.gameType == 'punctuation'}">punctuation
+                            </option>
+                            <option value="regional_meaning" th:selected="${game.gameType == 'regional_meaning'}">
+                                regional_meaning</option>
+                            <option value="review" th:selected="${game.gameType == 'review'}">review</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Map ID</label>
+                        <input type="number" name="mapId" class="form-control" th:value="${game.mapId}"
+                            placeholder="1" />
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Order Index</label>
+                        <input type="number" name="orderIndex" class="form-control" th:value="${game.orderIndex}"
+                            placeholder="1" />
+                    </div>
+
+                    <div class="form-group">
+                        <div class="form-check">
+                            <input type="checkbox" id="isPremium" name="isPremium" value="true"
+                                th:checked="${game.isPremium}" />
+                            <label for="isPremium" class="form-label" style="margin:0;">Premium Game</label>
+                        </div>
+                    </div>
+
+                    <div style="display:flex; gap:12px; margin-top:8px;">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save"></i> Save Game
+                        </button>
+                        <a href="/admin/games" class="btn btn-ghost">Cancel</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+    </th:block>
+    <th:block th:fragment="extraScript"></th:block>
+</body>
+
+</html>

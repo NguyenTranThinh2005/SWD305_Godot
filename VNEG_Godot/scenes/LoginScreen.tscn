@@ -1,8 +1,8 @@
-[gd_scene load_steps=2 format=3 uid="uid://loginscreenuid1234"]
+[gd_scene format=3 uid="uid://dn7nho37hcjxp"]
 
-[ext_resource type="Script" path="res://scripts/ui/LoginScreen.gd" id="1_loginscreen"]
+[ext_resource type="Script" uid="uid://dr7dbp74i5l55" path="res://scripts/ui/LoginScreen.gd" id="1_loginscreen"]
 
-[node name="LoginScreen" type="Control"]
+[node name="LoginScreen" type="Control" unique_id=545590070]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -11,7 +11,7 @@ grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_loginscreen")
 
-[node name="CenterContainer" type="CenterContainer" parent="."]
+[node name="CenterContainer" type="CenterContainer" parent="." unique_id=1722610698]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -19,79 +19,80 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="VBoxContainer" type="VBoxContainer" parent="CenterContainer"]
+[node name="VBoxContainer" type="VBoxContainer" parent="CenterContainer" unique_id=1819413324]
 custom_minimum_size = Vector2(350, 0)
 layout_mode = 2
 theme_override_constants/separation = 15
 
-[node name="Title" type="Label" parent="CenterContainer/VBoxContainer"]
+[node name="Title" type="Label" parent="CenterContainer/VBoxContainer" unique_id=1524384778]
 layout_mode = 2
 theme_override_font_sizes/font_size = 32
 text = "VNEG System"
 horizontal_alignment = 1
 
-[node name="LoginBox" type="VBoxContainer" parent="CenterContainer/VBoxContainer"]
+[node name="LoginBox" type="VBoxContainer" parent="CenterContainer/VBoxContainer" unique_id=55614535]
 unique_name_in_owner = true
 layout_mode = 2
 theme_override_constants/separation = 10
 
-[node name="EmailInput" type="LineEdit" parent="CenterContainer/VBoxContainer/LoginBox"]
+[node name="EmailInput" type="LineEdit" parent="CenterContainer/VBoxContainer/LoginBox" unique_id=288655110]
 layout_mode = 2
 theme_override_font_sizes/font_size = 18
 placeholder_text = "Email"
 
-[node name="PasswordInput" type="LineEdit" parent="CenterContainer/VBoxContainer/LoginBox"]
+[node name="PasswordInput" type="LineEdit" parent="CenterContainer/VBoxContainer/LoginBox" unique_id=2082896543]
 layout_mode = 2
 theme_override_font_sizes/font_size = 18
 placeholder_text = "Mật khẩu"
 secret = true
 
-[node name="LoginButton" type="Button" parent="CenterContainer/VBoxContainer/LoginBox"]
+[node name="LoginButton" type="Button" parent="CenterContainer/VBoxContainer/LoginBox" unique_id=1118603513]
 custom_minimum_size = Vector2(0, 45)
 layout_mode = 2
 theme_override_font_sizes/font_size = 18
 text = "Đăng nhập"
 
-[node name="ToRegisterButton" type="LinkButton" parent="CenterContainer/VBoxContainer/LoginBox"]
+[node name="ToRegisterButton" type="LinkButton" parent="CenterContainer/VBoxContainer/LoginBox" unique_id=528602622]
 layout_mode = 2
 size_flags_horizontal = 4
 text = "Chưa có tài khoản? Đăng ký ngay"
 
-[node name="RegisterBox" type="VBoxContainer" parent="CenterContainer/VBoxContainer"]
+[node name="RegisterBox" type="VBoxContainer" parent="CenterContainer/VBoxContainer" unique_id=1600264796]
 unique_name_in_owner = true
 visible = false
 layout_mode = 2
 theme_override_constants/separation = 10
 
-[node name="RegEmailInput" type="LineEdit" parent="CenterContainer/VBoxContainer/RegisterBox"]
+[node name="RegEmailInput" type="LineEdit" parent="CenterContainer/VBoxContainer/RegisterBox" unique_id=1420715683]
 layout_mode = 2
 theme_override_font_sizes/font_size = 18
 placeholder_text = "Email đăng ký"
 
-[node name="RegPasswordInput" type="LineEdit" parent="CenterContainer/VBoxContainer/RegisterBox"]
+[node name="RegPasswordInput" type="LineEdit" parent="CenterContainer/VBoxContainer/RegisterBox" unique_id=561476789]
 layout_mode = 2
 theme_override_font_sizes/font_size = 18
 placeholder_text = "Mật khẩu"
 secret = true
 
-[node name="PhoneInput" type="LineEdit" parent="CenterContainer/VBoxContainer/RegisterBox"]
+[node name="PhoneInput" type="LineEdit" parent="CenterContainer/VBoxContainer/RegisterBox" unique_id=831945292]
 layout_mode = 2
 theme_override_font_sizes/font_size = 18
 placeholder_text = "Số điện thoại"
 
-[node name="HBoxGrade" type="HBoxContainer" parent="CenterContainer/VBoxContainer/RegisterBox"]
+[node name="HBoxGrade" type="HBoxContainer" parent="CenterContainer/VBoxContainer/RegisterBox" unique_id=405070301]
 layout_mode = 2
 
-[node name="Label" type="Label" parent="CenterContainer/VBoxContainer/RegisterBox/HBoxGrade"]
+[node name="Label" type="Label" parent="CenterContainer/VBoxContainer/RegisterBox/HBoxGrade" unique_id=168370495]
 layout_mode = 2
 text = "Khối lớp: "
 
-[node name="GradeInput" type="OptionButton" parent="CenterContainer/VBoxContainer/RegisterBox/HBoxGrade"]
+[node name="GradeInput" type="OptionButton" parent="CenterContainer/VBoxContainer/RegisterBox/HBoxGrade" unique_id=2030996319]
 layout_mode = 2
 size_flags_horizontal = 3
 selected = 0
 item_count = 12
 popup/item_0/text = "Lớp 1"
+popup/item_0/id = 0
 popup/item_1/text = "Lớp 2"
 popup/item_1/id = 1
 popup/item_2/text = "Lớp 3"
@@ -115,36 +116,37 @@ popup/item_10/id = 10
 popup/item_11/text = "Lớp 12"
 popup/item_11/id = 11
 
-[node name="HBoxRegion" type="HBoxContainer" parent="CenterContainer/VBoxContainer/RegisterBox"]
+[node name="HBoxRegion" type="HBoxContainer" parent="CenterContainer/VBoxContainer/RegisterBox" unique_id=1492794714]
 layout_mode = 2
 
-[node name="Label" type="Label" parent="CenterContainer/VBoxContainer/RegisterBox/HBoxRegion"]
+[node name="Label" type="Label" parent="CenterContainer/VBoxContainer/RegisterBox/HBoxRegion" unique_id=1896795397]
 layout_mode = 2
 text = "Vùng miền: "
 
-[node name="RegionInput" type="OptionButton" parent="CenterContainer/VBoxContainer/RegisterBox/HBoxRegion"]
+[node name="RegionInput" type="OptionButton" parent="CenterContainer/VBoxContainer/RegisterBox/HBoxRegion" unique_id=1182868364]
 layout_mode = 2
 size_flags_horizontal = 3
 selected = 0
 item_count = 3
 popup/item_0/text = "Miền Bắc"
+popup/item_0/id = 0
 popup/item_1/text = "Miền Trung"
 popup/item_1/id = 1
 popup/item_2/text = "Miền Nam"
 popup/item_2/id = 2
 
-[node name="SubmitRegisterButton" type="Button" parent="CenterContainer/VBoxContainer/RegisterBox"]
+[node name="SubmitRegisterButton" type="Button" parent="CenterContainer/VBoxContainer/RegisterBox" unique_id=276479728]
 custom_minimum_size = Vector2(0, 45)
 layout_mode = 2
 theme_override_font_sizes/font_size = 18
 text = "Xác nhận Đăng ký"
 
-[node name="ToLoginButton" type="LinkButton" parent="CenterContainer/VBoxContainer/RegisterBox"]
+[node name="ToLoginButton" type="LinkButton" parent="CenterContainer/VBoxContainer/RegisterBox" unique_id=1583394597]
 layout_mode = 2
 size_flags_horizontal = 4
 text = "Đã có tài khoản? Đăng nhập"
 
-[node name="StatusLabel" type="Label" parent="CenterContainer/VBoxContainer"]
+[node name="StatusLabel" type="Label" parent="CenterContainer/VBoxContainer" unique_id=582802622]
 layout_mode = 2
 theme_override_colors/font_color = Color(1, 1, 1, 1)
 theme_override_font_sizes/font_size = 16

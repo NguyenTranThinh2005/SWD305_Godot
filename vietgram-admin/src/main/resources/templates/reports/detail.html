@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+    th:replace="~{layout :: layout(~{::title}, ~{::content}, ~{::extraStyle}, ~{::extraScript})}">
+
+<head>
+    <title th:fragment="title">Report Detail</title>
+    <th:block th:fragment="extraStyle"></th:block>
+</head>
+
+<body>
+    <th:block th:fragment="content">
+
+        <div style="margin-bottom:20px;">
+            <a href="/reports" class="btn btn-ghost"><i class="fas fa-arrow-left"></i> Back to Reports</a>
+        </div>
+
+        <div class="grid-2">
+            <div class="card">
+                <div class="card-header">
+                    <h3><i class="fas fa-flag" style="color:var(--warning); margin-right:8px;"></i>Report #<span
+                            th:text="${report.id}"></span></h3>
+                    <span class="badge" th:classappend="'badge-' + ${report.status}" th:text="${report.status}"></span>
+                </div>
+                <div class="card-body">
+                    <table>
+                        <tr>
+                            <td style="color:var(--text-muted); width:40%;">Type</td>
+                            <td><span class="badge" th:classappend="'badge-' + ${report.type}"
+                                    th:text="${report.type}"></span></td>
+                        </tr>
+                        <tr>
+                            <td style="color:var(--text-muted);">Reporter ID</td>
+                            <td th:text="${report.userId}"></td>
+                        </tr>
+                        <tr th:if="${reporter != null}">
+                            <td style="color:var(--text-muted);">Reporter Email</td>
+                            <td th:text="${reporter.email}"></td>
+                        </tr>
+                        <tr>
+                            <td style="color:var(--text-muted);">Submitted</td>
+                            <td
+                                th:text="${report.createdAt != null ? #temporals.format(report.createdAt,'dd/MM/yyyy HH:mm') : '—'}">
+                            </td>
+                        </tr>
+                        <tr th:if="${report.resolvedAt != null}">
+                            <td style="color:var(--text-muted);">Resolved At</td>
+                            <td th:text="${#temporals.format(report.resolvedAt,'dd/MM/yyyy HH:mm')}"></td>
+                        </tr>
+                        <tr th:if="${report.resolvedBy != null}">
+                            <td style="color:var(--text-muted);">Resolved By</td>
+                            <td th:text="${report.resolvedBy}"></td>
+                        </tr>
+                    </table>
+                    <div style="padding:20px; border-top:1px solid rgba(255,255,255,0.07);">
+                        <div style="color:var(--text-muted); font-size:12px; margin-bottom:8px;">Description</div>
+                        <div th:text="${report.description}"
+                            style="background:rgba(255,255,255,0.04); padding:14px; border-radius:10px; font-size:14px; line-height:1.6;">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h3><i class="fas fa-cog" style="color:var(--accent); margin-right:8px;"></i>Actions</h3>
+                </div>
+                <div class="card-body" style="padding:20px; display:flex; flex-direction:column; gap:12px;">
+                    <form th:if="${report.status == 'pending'}"
+                        th:action="@{/reports/{id}/investigate(id=${report.id})}" method="post">
+                        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                        <button type="submit" class="btn btn-warning" style="width:100%;">
+                            <i class="fas fa-search"></i> Mark as Investigating
+                        </button>
+                    </form>
+                    <form th:if="${report.status != 'resolved'}" th:action="@{/reports/{id}/resolve(id=${report.id})}"
+                        method="post">
+                        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                        <button type="submit" class="btn btn-success" style="width:100%;">
+                            <i class="fas fa-check-circle"></i> Mark as Resolved
+                        </button>
+                    </form>
+                    <a th:if="${report.userId != null}" th:href="@{/users/{id}(id=${report.userId})}"
+                        class="btn btn-ghost" style="width:100%;">
+                        <i class="fas fa-user"></i> View Reporter
+                    </a>
+                </div>
+            </div>
+        </div>
+
+    </th:block>
+    <th:block th:fragment="extraScript"></th:block>
+</body>
+
+</html>
