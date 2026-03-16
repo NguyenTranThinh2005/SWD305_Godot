@@ -124,6 +124,12 @@ func admin_get_content_reports() -> Dictionary:
 func admin_get_error_hotspots() -> Dictionary:
 	return await fetch("/api/admin/analytics/error-hotspots")
 
+func admin_get_audit_logs(filters: Dictionary = {}) -> Dictionary:
+	var query = "/api/admin/analytics/audit-logs?"
+	for key in filters.keys():
+		query += str(key) + "=" + str(filters[key]) + "&"
+	return await fetch(query.rstrip("&"))
+
 # ==============================================================================
 # ADMIN CRUD API
 # ==============================================================================

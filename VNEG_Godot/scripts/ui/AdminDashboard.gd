@@ -27,6 +27,11 @@ var all_games: Array = []
 var all_topics: Array = []
 var all_questions: Array = []
 
+# Audit Log state
+var audit_page: int = 1
+var audit_total_pages: int = 1
+var audit_filter_action: String = ""
+
 func _ready():
 	# Auth check
 	if not AuthManager.is_logged_in() or AuthManager.get_user_role() != "admin":
@@ -48,6 +53,7 @@ func _create_tabs():
 		{"id": "health", "label": "🖥️ System Health"},
 		{"id": "content", "label": "📈 Content Reports"},
 		{"id": "knowledge", "label": "📝 Knowledge Mgmt"},
+		{"id": "audit", "label": "📜 Audit Log"},
 		{"id": "export", "label": "📤 Export"},
 	]
 	for t in tabs:
@@ -68,12 +74,14 @@ func _switch_tab(tab_id: String):
 	# Clear content
 	for child in content_area.get_children():
 		child.queue_free()
+	await get_tree().process_frame
 
 	match tab_id:
 		"analytics": _load_analytics_tab()
 		"health": _load_health_tab()
 		"content": _load_content_tab()
 		"knowledge": _load_knowledge_tab()
+		"audit": _load_audit_tab()
 		"export": _load_export_tab()
 
 func _get_tab_index(tab_id: String) -> int:
@@ -82,7 +90,8 @@ func _get_tab_index(tab_id: String) -> int:
 		"health": return 1
 		"content": return 2
 		"knowledge": return 3
-		"export": return 4
+		"audit": return 4
+		"export": return 5
 	return 0
 
 # ==============================================================================
@@ -298,7 +307,7 @@ func _load_knowledge_tab():
 	for st in [{"id": "games", "label": "🎮 Games"}, {"id": "grammar", "label": "📚 Grammar"}, {"id": "questions", "label": "❓ Questions"}]:
 		var btn = Button.new()
 		btn.text = st["label"]
-		btn.pressed.connect(func(): _load_knowledge_sub(st["id"]))
+		btn.pressed.connect(_load_knowledge_sub.bind(st["id"]))
 		sub_tabs.add_child(btn)
 	content_area.add_child(sub_tabs)
 
@@ -310,6 +319,7 @@ func _load_knowledge_sub(sub: String):
 	var children = content_area.get_children()
 	for i in range(2, children.size()):
 		children[i].queue_free()
+	await get_tree().process_frame
 
 	match sub:
 		"games": _build_games_crud()
@@ -786,7 +796,108 @@ func _on_csv_selected(path: String):
 	_load_knowledge_sub("questions")
 
 # ==============================================================================
-# TAB 5: EXPORT
+# TAB 5: AUDIT LOG
+# ==============================================================================
+func _load_audit_tab():
+	show_status("Đang tải Audit Log...", Color.WHITE)
+	
+	# Filter bar
+	var filter_bar = HBoxContainer.new()
+	var action_input = LineEdit.new()
+	action_input.placeholder_text = "Filter by action (e.g. user_status_change)"
+	action_input.custom_minimum_size.x = 300
+	action_input.text = audit_filter_action
+	action_input.text_changed.connect(func(t): audit_filter_action = t)
+	filter_bar.add_child(action_input)
+	
+	var search_btn = Button.new()
+	search_btn.text = "🔍 Lọc"
+	search_btn.pressed.connect(func(): audit_page = 1; _do_load_audit())
+	filter_bar.add_child(search_btn)
+	content_area.add_child(filter_bar)
+	
+	# Pagination bar
+	var page_bar = HBoxContainer.new()
+	page_bar.name = "AuditPageBar"
+	var prev_btn = Button.new()
+	prev_btn.text = "◀"
+	prev_btn.pressed.connect(func(): if audit_page > 1: audit_page -= 1; _do_load_audit())
+	page_bar.add_child(prev_btn)
+	
+	var page_label = Label.new()
+	page_label.name = "PageLabel"
+	page_bar.add_child(page_label)
+	
+	var next_btn = Button.new()
+	next_btn.text = "▶"
+	next_btn.pressed.connect(func(): if audit_page < audit_total_pages: audit_page += 1; _do_load_audit())
+	page_bar.add_child(next_btn)
+	content_area.add_child(page_bar)
+	
+	_add_separator()
+	
+	var table = GridContainer.new()
+	table.name = "AuditTable"
+	table.columns = 5
+	for h in ["Time", "User", "Action", "Details", "ID"]:
+		var header = Label.new()
+		header.text = h
+		header.add_theme_color_override("font_color", Color(0.7, 0.7, 1.0))
+		table.add_child(header)
+	content_area.add_child(table)
+	
+	await _do_load_audit()
+
+func _do_load_audit():
+	var filters = {"page": audit_page, "size": 20}
+	if audit_filter_action != "":
+		filters["action"] = audit_filter_action
+		
+	var res = await API.admin_get_audit_logs(filters)
+	if not res["ok"]:
+		_handle_api_error("Audit Log", res)
+		return
+		
+	var data = res["data"]
+	var logs = data.get("logs", [])
+	var pagination = data.get("pagination", {})
+	audit_total_pages = int(pagination.get("totalPages", 1))
+	audit_page = int(pagination.get("page", 1))
+	
+	# Update pagination label
+	var page_bar = content_area.get_node_or_null("AuditPageBar")
+	if page_bar:
+		var pl = page_bar.get_node_or_null("PageLabel")
+		if pl: pl.text = " Trang %d / %d (Mục: %d) " % [audit_page, audit_total_pages, int(pagination.get("totalCount", 0))]
+		
+	# Update table
+	var table = content_area.get_node_or_null("AuditTable")
+	if not table: return
+	
+	# Clear previous rows (keep header: first 5 children)
+	for i in range(table.get_child_count() - 1, 4, -1):
+		table.get_child(i).queue_free()
+	
+	await get_tree().process_frame
+	
+	for l in logs:
+		_add_grid_cell(table, str(l.get("createdAt", "")))
+		_add_grid_cell(table, str(l.get("userEmail", "System")))
+		_add_grid_cell(table, str(l.get("action", "")))
+		
+		var details = Label.new()
+		details.text = str(l.get("details", ""))
+		details.clip_text = true
+		details.custom_minimum_size.x = 400
+		details.tooltip_text = details.text
+		table.add_child(details)
+		
+		_add_grid_cell(table, str(l.get("id", "")))
+		
+	show_status("", Color.WHITE)
+
+# ==============================================================================
+# TAB 6: EXPORT
 # ==============================================================================
 func _load_export_tab():
 	_add_section_label("📤 Export Data to CSV")
@@ -806,6 +917,11 @@ func _load_export_tab():
 		content_area.add_child(hbox)
 
 	_add_section_label("ℹ️ Files sẽ được lưu vào user://exports/")
+	
+	var open_folder_btn = Button.new()
+	open_folder_btn.text = "📂 Mở thư mục Export"
+	open_folder_btn.pressed.connect(func(): OS.shell_open(ProjectSettings.globalize_path("user://exports")))
+	content_area.add_child(open_folder_btn)
 
 func _do_export(export_type: String):
 	show_status("Đang export " + export_type + "...", Color.WHITE)

@@ -218,6 +218,50 @@ namespace SWD305.Controllers
             return Ok(result);
         }
 
+        // ── SYSTEM AUDIT LOGS ──
+        [HttpGet("audit-logs")]
+        public async Task<IActionResult> GetAuditLogs(
+            [FromQuery] string? action,
+            [FromQuery] int page = 1,
+            [FromQuery] int size = 20)
+        {
+            var query = _context.SystemLogs
+                .Include(l => l.User)
+                .AsQueryable();
+
+            if (!string.IsNullOrWhiteSpace(action))
+                query = query.Where(l => l.Action == action);
+
+            var totalCount = await query.CountAsync();
+
+            var logs = await query
+                .OrderByDescending(l => l.CreatedAt)
+                .Skip((page - 1) * size)
+                .Take(size)
+                .Select(l => new
+                {
+                    l.Id,
+                    userId = l.UserId,
+                    userEmail = l.User != null ? l.User.Email : "System",
+                    l.Action,
+                    l.Details,
+                    l.CreatedAt
+                })
+                .ToListAsync();
+
+            return Ok(new
+            {
+                logs,
+                pagination = new
+                {
+                    page,
+                    size,
+                    totalCount,
+                    totalPages = (int)Math.Ceiling(totalCount / (double)size)
+                }
+            });
+        }
+
         // ── CSV EXPORT ──
         [HttpGet("export/{type}")]
         public async Task<IActionResult> ExportCsv(string type)
