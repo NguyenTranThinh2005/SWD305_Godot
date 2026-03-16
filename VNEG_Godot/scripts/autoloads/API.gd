@@ -123,3 +123,62 @@ func start_team_task(task_id: int) -> Dictionary:
 
 func complete_team_task(task_id: int, session_id: int) -> Dictionary:
 	return await fetch("/api/tasks/" + str(task_id) + "/complete", HTTPClient.METHOD_POST, {"sessionId": session_id})
+
+# ==============================================================================
+# USER SEARCH & TEAM MANAGEMENT EXTENSIONS
+# ==============================================================================
+
+func search_users(query: String) -> Dictionary:
+	return await fetch("/api/users/search?q=" + query.uri_encode())
+
+func add_team_member(team_id: int, user_id: int) -> Dictionary:
+	return await fetch("/api/team-owner/" + str(team_id) + "/add-member", HTTPClient.METHOD_POST, {"userId": user_id})
+
+# ==============================================================================
+# USER PROFILE EXTENSIONS
+# ==============================================================================
+
+func update_me(data: Dictionary) -> Dictionary:
+	return await fetch("/api/users/me", HTTPClient.METHOD_PUT, data)
+
+func upload_image(file_path: String) -> Dictionary:
+	var file = FileAccess.open(file_path, FileAccess.READ)
+	if not file:
+		return {"ok": false, "data": "Cannot open file"}
+	
+	var content = file.get_buffer(file.get_length())
+	file.close()
+	
+	var boundary = "----GodotBoundary" + str(Time.get_ticks_msec())
+	var headers = [
+		"Content-Type: multipart/form-data; boundary=" + boundary,
+		"X-Session-Token: " + AuthManager.get_token()
+	]
+	
+	var body = PackedByteArray()
+	body.append_array(("--" + boundary + "\r\n").to_utf8_buffer())
+	body.append_array(("Content-Disposition: form-data; name=\"file\"; filename=\"" + file_path.get_file() + "\"\r\n").to_utf8_buffer())
+	body.append_array(("Content-Type: image/" + file_path.get_extension() + "\r\n\r\n").to_utf8_buffer())
+	body.append_array(content)
+	body.append_array(("\r\n--" + boundary + "--\r\n").to_utf8_buffer())
+	
+	var http_request = HTTPRequest.new()
+	add_child(http_request)
+	
+	var url = API_BASE + "/api/upload"
+	var err = http_request.request_raw(url, headers, HTTPClient.METHOD_POST, body)
+	if err != OK:
+		http_request.queue_free()
+		return {"ok": false, "data": "Request error"}
+		
+	var result = await http_request.request_completed
+	http_request.queue_free()
+	
+	var res_code = result[1]
+	var res_body = result[3].get_string_from_utf8()
+	
+	var json = JSON.new()
+	var parse_err = json.parse(res_body)
+	var data = json.data if parse_err == OK else res_body
+	
+	return {"ok": res_code >= 200 and res_code < 300, "data": data}

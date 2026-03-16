@@ -160,6 +160,8 @@ func _show_team_details(team_data: Dictionary) -> void:
 	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	vbox.add_child(title)
 	
+	var is_owner = team_data["ownerId"] == AuthManager.get_user_id()
+	
 	var split = HBoxContainer.new()
 	split.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	vbox.add_child(split)
@@ -172,6 +174,22 @@ func _show_team_details(team_data: Dictionary) -> void:
 	var mem_title = Label.new()
 	mem_title.text = "Đang tải thành viên..."
 	left_vbox.add_child(mem_title)
+	
+	if is_owner:
+		var search_hb = HBoxContainer.new()
+		var search_input = LineEdit.new()
+		search_input.placeholder_text = "Tìm email (VD: thinh@...)"
+		search_input.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		search_hb.add_child(search_input)
+		var search_btn = Button.new()
+		search_btn.text = "Tìm"
+		search_hb.add_child(search_btn)
+		left_vbox.add_child(search_hb)
+		
+		var search_results = VBoxContainer.new()
+		left_vbox.add_child(search_results)
+		
+		search_btn.pressed.connect(func(): _on_search_users(search_input.text, search_results, team_data["id"], mem_title, left_vbox))
 	
 	var mem_scroll = ScrollContainer.new()
 	mem_scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
@@ -188,8 +206,6 @@ func _show_team_details(team_data: Dictionary) -> void:
 	var task_title = Label.new()
 	task_title.text = "Đang tải bài tập..."
 	right_vbox.add_child(task_title)
-	
-	var is_owner = team_data["ownerId"] == AuthManager.get_user_id()
 	
 	if is_owner:
 		var create_hb = HBoxContainer.new()
@@ -243,6 +259,7 @@ func _fetch_members(team_data: Dictionary, is_owner: bool, title_lbl: Label, lis
 	var res = await API.fetch("/api/teams/" + str(team_data["id"]) + "/members")
 	if res["ok"]:
 		title_lbl.text = "Thành viên (" + str(res["data"].size()) + ")"
+		for child in list_container.get_children(): child.queue_free()
 		for m in res["data"]:
 			var m_hbox = HBoxContainer.new()
 			var m_lbl = Label.new()
@@ -259,7 +276,7 @@ func _fetch_members(team_data: Dictionary, is_owner: bool, title_lbl: Label, lis
 				m_hbox.add_child(kick_btn)
 			list_container.add_child(m_hbox)
 	else:
-		title_lbl.text = "Lỗi tải thành viên!"
+		title_lbl.text = "Lỗi tải thành viên hoặc nhóm chưa có thành viên!"
 		title_lbl.add_theme_color_override("font_color", Color.RED)
 
 func _fetch_tasks(team_id: int, title_lbl: Label, list_container: Control) -> void:
@@ -297,7 +314,10 @@ func _on_create_team_task(team_id: int, game_id_str: String) -> void:
 	if res["ok"]:
 		show_status("Đã tạo bài tập", Color.GREEN)
 	else:
-		show_status("Lỗi tạo bài tập", Color.RED)
+		var err_msg = str(res["data"])
+		if res["data"] is Dictionary and res["data"].has("detail"):
+			err_msg = str(res["data"]["detail"])
+		show_status("Lỗi tạo bài tập: " + err_msg, Color.RED)
 
 func _on_play_team_task(task_data: Dictionary) -> void:
 	if details_panel: details_panel.queue_free()
@@ -348,3 +368,44 @@ func _on_kick_member(team_id: int, user_id: int) -> void:
 		_load_my_teams()
 	else:
 		show_status("Lỗi đuổi thành viên: " + str(res["data"]), Color.RED)
+
+func _on_search_users(query: String, results_container: Control, team_id: int, title_lbl: Label, members_vbox: Control) -> void:
+	for child in results_container.get_children(): child.queue_free()
+	if query.length() < 3:
+		return
+		
+	var res = await API.search_users(query)
+	if res["ok"]:
+		var users = res["data"]
+		if users.size() == 0:
+			var lbl = Label.new()
+			lbl.text = "Không tìm thấy người dùng."
+			results_container.add_child(lbl)
+			return
+			
+		for u in users:
+			var hb = HBoxContainer.new()
+			var lbl = Label.new()
+			lbl.text = u["email"]
+			lbl.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+			hb.add_child(lbl)
+			var add_btn = Button.new()
+			add_btn.text = "Thêm"
+			add_btn.pressed.connect(func(): _on_add_team_member(team_id, u["id"], results_container, title_lbl, members_vbox))
+			hb.add_child(add_btn)
+			results_container.add_child(hb)
+	else:
+		var lbl = Label.new()
+		lbl.text = "Lỗi tìm kiếm."
+		results_container.add_child(lbl)
+
+func _on_add_team_member(team_id: int, user_id: int, results_container: Control, title_lbl: Label, members_vbox: Control) -> void:
+	for child in results_container.get_children(): child.queue_free()
+	show_status("Đang thêm thành viên...", Color.WHITE)
+	var res = await API.add_team_member(team_id, user_id)
+	if res["ok"]:
+		show_status("Đã thêm thành viên!", Color.GREEN)
+		# Refresh member list
+		_fetch_members({"id": team_id, "ownerId": AuthManager.get_user_id()}, true, title_lbl, members_vbox.get_child(members_vbox.get_child_count()-1).get_child(0))
+	else:
+		show_status("Lỗi thêm: " + str(res["data"]), Color.RED)

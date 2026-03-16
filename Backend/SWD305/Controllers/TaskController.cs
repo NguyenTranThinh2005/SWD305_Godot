@@ -97,7 +97,18 @@ namespace SWD305.Controllers
             };
 
             _context.Tasks.Add(task);
-            await _context.SaveChangesAsync();
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateException ex)
+            {
+                return BadRequest(new
+                {
+                    message = "Lỗi lưu Database khi tạo Task.",
+                    detail = ex.InnerException?.Message ?? ex.Message
+                });
+            }
 
             return Ok(new
             {
