@@ -18,15 +18,12 @@ namespace SWD305.Controllers
 
         private static string GetWikiUrl(string filename)
         {
-            // Use Special:FilePath which handles redirects and filename encoding more robustly
-            // URL structure: https://commons.wikimedia.org/w/index.php?title=Special:FilePath&file=FILENAME
-            return $"https://commons.wikimedia.org/w/index.php?title=Special:FilePath&file={Uri.EscapeDataString(filename.Replace(" ", "_"))}";
+            return $"https://commons.wikimedia.org/wiki/Special:Redirect/file/{Uri.EscapeDataString(filename.Replace(" ", "_"))}";
         }
 
         [HttpPost]
         public async Task<IActionResult> Seed()
         {
-            // 1. Clear existing data in correct order
             await _context.Database.ExecuteSqlRawAsync("DELETE FROM dbo.game_error_grammar;");
             await _context.Database.ExecuteSqlRawAsync("DELETE FROM dbo.game_errors;");
             await _context.Database.ExecuteSqlRawAsync("DELETE FROM dbo.game_sessions;");
@@ -35,42 +32,39 @@ namespace SWD305.Controllers
             await _context.Database.ExecuteSqlRawAsync("DELETE FROM dbo.games;");
             await _context.Database.ExecuteSqlRawAsync("DELETE FROM dbo.maps;");
 
-            // Reset Identities
             await _context.Database.ExecuteSqlRawAsync("DBCC CHECKIDENT ('dbo.maps', RESEED, 0); DBCC CHECKIDENT ('dbo.games', RESEED, 0); DBCC CHECKIDENT ('dbo.questions', RESEED, 0);");
 
-            // 2. Ensure Grades
             if (!await _context.Grades.AnyAsync(g => g.Id == 1)) _context.Grades.Add(new Grade { Id = 1, Name = "Lớp 1" });
             if (!await _context.Grades.AnyAsync(g => g.Id == 2)) _context.Grades.Add(new Grade { Id = 2, Name = "Lớp 2" });
             if (!await _context.Grades.AnyAsync(g => g.Id == 3)) _context.Grades.Add(new Grade { Id = 3, Name = "Lớp 3" });
             await _context.SaveChangesAsync();
 
-            // 3. Create Maps
             var mapSoCap   = new Map { GradeId = 1, Name = "Sơ Cấp",   OrderIndex = 1, IsActive = true };
             var mapTrungCap = new Map { GradeId = 2, Name = "Trung Cấp", OrderIndex = 2, IsActive = true };
             var mapCaoCap  = new Map { GradeId = 3, Name = "Cao Cấp",   OrderIndex = 3, IsActive = true };
             _context.Maps.AddRange(mapSoCap, mapTrungCap, mapCaoCap);
             await _context.SaveChangesAsync();
 
-            // 4. Seed each map
             await SeedMap(_context, mapSoCap,    1);
             await SeedMap(_context, mapTrungCap, 2);
             await SeedMap(_context, mapCaoCap,   3);
 
-            var mapData  = await _context.Maps.Select(m => new { m.Id, m.Name }).ToListAsync();
-            var gameData = await _context.Games.Select(g => new { g.Id, g.Name, g.MapId }).ToListAsync();
-
             return Ok(new
             {
-                Message = "Seeding completed with real question bank!",
-                Maps  = mapData,
-                Games = gameData,
+                Message = "Seeding completed with real question bank (V6-ULTIMATE)!",
                 TotalQuestions = await _context.Questions.CountAsync()
             });
         }
 
-        // =====================================================================
-        // SEED ONE MAP
-        // =====================================================================
+        [HttpGet("debug-questions")]
+        public async Task<IActionResult> DebugQuestions()
+        {
+            var questions = await _context.Questions
+                .Where(q => q.QuestionType == "listen_choose" || q.QuestionType == "picture_guess")
+                .ToListAsync();
+            return Ok(questions);
+        }
+
         private static async System.Threading.Tasks.Task SeedMap(VnegSystemContext ctx, Map map, int difficulty)
         {
             var gameTypes = new (string Name, string Type)[]
@@ -102,9 +96,6 @@ namespace SWD305.Controllers
             }
         }
 
-        // =====================================================================
-        // QUESTION FACTORY — returns 6 questions per game type × difficulty
-        // =====================================================================
         private static List<Question> BuildQuestions(int gameId, string gameType, int difficulty)
         {
             return gameType switch
@@ -119,9 +110,6 @@ namespace SWD305.Controllers
             };
         }
 
-        // =====================================================================
-        // NGỮ PHÁP — multiple_choice (Sentence-based Grammar)
-        // =====================================================================
         private static List<Question> MultipleChoice(int gameId, int diff)
         {
             var banks = new Dictionary<int, List<(string data, string answer, string explanation)>>
@@ -173,9 +161,6 @@ namespace SWD305.Controllers
             return result;
         }
 
-        // =====================================================================
-        // CHÍNH TẢ — fill_blank
-        // =====================================================================
         private static List<Question> FillBlank(int gameId, int diff)
         {
             var banks = new Dictionary<int, List<(string data, string answer)>>
@@ -212,39 +197,36 @@ namespace SWD305.Controllers
             return MakeQuestions(gameId, "fill_blank", diff, banks[diff]);
         }
 
-        // =====================================================================
-        // NHÌN TRANH — picture_guess
-        // =====================================================================
         private static List<Question> PictureGuess(int gameId, int diff)
         {
-            var banks = new Dictionary<int, List<(string data, string answer, string? imgUrl)>>
+            var banks = new Dictionary<int, List<(string data, string answer, string? imgUrl, string hint)>>
             {
                 [1] = new()
                 {
-                    ("Con vật này là gì?", "Con mèo", "https://loremflickr.com/320/240/cat,kitten,pet?lock=101"),
-                    ("Con vật này là gì?", "Con chó", "https://loremflickr.com/320/240/dog,puppy,pet?lock=102"),
-                    ("Đây là quả gì?", "Quả táo", "https://loremflickr.com/320/240/apple,fruit?lock=103"),
-                    ("Đây là quả gì?", "Quả chuối", "https://loremflickr.com/320/240/banana,fruit?lock=104"),
-                    ("Phương tiện này là gì?", "Xe đạp", "https://loremflickr.com/320/240/bicycle,cycling?lock=105"),
-                    ("Phương tiện này là gì?", "Xe máy", "https://loremflickr.com/320/240/motorcycle,scooter?lock=106"),
+                    ("Con vật này là gì?", "Con mèo", "https://upload.wikimedia.org/wikipedia/commons/3/3a/Cat03.jpg", "[V6-ULTIMATE] Con vật này hay kêu meo meo và thích bắt chuột."),
+                    ("Con vật này là gì?", "Con chó", "https://upload.wikimedia.org/wikipedia/commons/0/0a/B%E1%BA%AFc_H%C3%A0_dog_side.jpg", "[V6-ULTIMATE] Loài vật trung thành, hay sủa gâu gâu."),
+                    ("Đây là quả gì?", "Quả táo", "https://upload.wikimedia.org/wikipedia/commons/1/15/Red_Apple.jpg", "[V6-ULTIMATE] Quả có màu đỏ, giòn và ngọt, rất tốt cho sức khỏe."),
+                    ("Đây là quả gì?", "Quả chuối", "https://upload.wikimedia.org/wikipedia/commons/9/98/Bananas_on_black_background_02.jpg", "[V6-ULTIMATE] Quả có hình dáng dài, vỏ màu vàng khi chín."),
+                    ("Phương tiện này là gì?", "Xe đạp", "https://upload.wikimedia.org/wikipedia/commons/3/33/Hue_Vietnam_Nun-with-bicycle-01.jpg", "[V6-ULTIMATE] Phương tiện có hai bánh, chạy bằng sức người đạp."),
+                    ("Phương tiện này là gì?", "Xe máy", "https://upload.wikimedia.org/wikipedia/commons/d/d2/Honda_Super_Cub_with_watering_can.jpg", "[V6-ULTIMATE] Phương tiện phổ biến nhất tại Việt Nam, có động cơ và hai bánh."),
                 },
                 [2] = new()
                 {
-                    ("Hình ảnh chim bồ câu biểu trưng cho?", "Hòa bình", "https://loremflickr.com/320/240/pigeon,white,bird?lock=107"),
-                    ("Đây là loài cây biểu tượng của VN?", "Cây tre", "https://loremflickr.com/320/240/bamboo,plant?lock=108"),
-                    ("Loài hoa này thường mọc ở đầm lầy?", "Hoa sen", "https://loremflickr.com/320/240/lotus,flower?lock=109"),
-                    ("Địa danh nổi tiếng này ở Quảng Ninh?", "Vịnh Hạ Long", "https://loremflickr.com/320/240/halongbay,vietnam?lock=110"),
-                    ("Nhạc cụ truyền thống VN?", "Đàn bầu", "https://loremflickr.com/320/240/instrument,vietnam?lock=111"),
-                    ("Trang phục truyền thống của phụ nữ VN?", "Áo dài", "https://loremflickr.com/320/240/vietnamese,dress?lock=112"),
+                    ("Hình ảnh này biểu trưng cho?", "Hòa bình", "https://upload.wikimedia.org/wikipedia/commons/4/44/A_White_Dove_at_Alnwick_gardens_-_panoramio_%281%29.jpg", "[V6-ULTIMATE] Chim bồ câu trắng mang thông điệp này."),
+                    ("Đây là loài cây biểu tượng của VN?", "Cây tre", "https://upload.wikimedia.org/wikipedia/commons/2/20/Bamboo_tree_showing_stalk_and_leaves.jpg", "[V6-ULTIMATE] Loài cây thân đốt, dẻo dai, gắn liền với làng quê Việt."),
+                    ("Loài hoa này thường mọc ở đầm lầy?", "Hoa sen", "https://upload.wikimedia.org/wikipedia/commons/4/48/Lotus_flowers_Vietnam_%2838834388684%29.jpg", "[V6-ULTIMATE] Gần bùn mà chẳng hôi tanh mùi bùn."),
+                    ("Địa danh nổi tiếng này ở Quảng Ninh?", "Vịnh Hạ Long", "https://upload.wikimedia.org/wikipedia/commons/2/2d/Halong_Bay_in_Vietnam.jpg", "[V6-ULTIMATE] Di sản thiên nhiên thế giới với hàng ngàn đảo đá vôi."),
+                    ("Nhạc cụ truyền thống VN?", "Đàn bầu", "https://upload.wikimedia.org/wikipedia/commons/a/a4/Vietnamese_musical_instrument_Dan_bau_2.jpg", "[V6-ULTIMATE] Nhạc cụ chỉ có một dây nhưng phát ra âm thanh rất độc đáo."),
+                    ("Trang phục truyền thống của VN?", "Áo dài", "https://upload.wikimedia.org/wikipedia/commons/c/cb/Vietnamese_girl_wearing_ao_dai_3.jpg", "[V6-ULTIMATE] Trang phục tôn vinh vẻ đẹp của người phụ nữ Việt Nam."),
                 },
                 [3] = new()
                 {
-                    ("Tác phẩm văn học kinh điển này là?", "Truyện Kiều", "https://loremflickr.com/320/240/book?lock=13"),
-                    ("Đại thi hào dân tộc này là ai?", "Nguyễn Du", "https://loremflickr.com/320/240/portrait?lock=14"),
-                    ("Vùng đồng bằng lớn nhất miền Nam?", "Đồng bằng sông Cửu Long", "https://loremflickr.com/320/240/river?lock=15"),
-                    ("Nơi yên nghỉ của Chủ tịch Hồ Chí Minh?", "Lăng Bác", "https://loremflickr.com/320/240/palace?lock=16"),
-                    ("Ký hiệu này dùng để ngăn cách các vế câu?", "Dấu chấm phẩy", "https://loremflickr.com/320/240/ink?lock=17"),
-                    ("Thể thơ truyền thống 6 chữ và 8 chữ?", "Thơ lục bát", "https://loremflickr.com/320/240/scroll?lock=18"),
+                    ("Tác phẩm văn học kinh điển này là?", "Truyện Kiều", "https://upload.wikimedia.org/wikipedia/commons/b/b1/Kim_V%C3%A2n_Ki%E1%BB%81u_t%C3%A2n_truy%E1%BB%87n.jpg", "[V6-ULTIMATE] Tác phẩm tiêu biểu nhất của Nguyễn Du."),
+                    ("Đại thi hào dân tộc này là ai?", "Nguyễn Du", "https://upload.wikimedia.org/wikipedia/commons/3/37/T%C6%B0%E1%BB%A3ng_%C4%90%E1%BA%A1i_thi_h%C3%A0o_Nguy%E1%BB%85n_Du.jpg", "[V6-ULTIMATE] Tác giả của tác phẩm 'Đoạn trường tân thanh'."),
+                    ("Vùng đồng bằng lớn nhất miền Nam?", "Đồng bằng sông Cửu Long", "https://upload.wikimedia.org/wikipedia/commons/9/95/Delta_Mekong_mappa.png", "[V6-ULTIMATE] Vùng đất trù phú với mạng lưới sông ngòi chằng chịt."),
+                    ("Nơi yên nghỉ của Bác Hồ?", "Lăng Bác", "https://upload.wikimedia.org/wikipedia/commons/d/dd/Hanoi_Vietnam_Mausoleum-of-Ho-Chi-Minh-01.jpg", "[V6-ULTIMATE] Công trình tại quảng trường Ba Đình lịch sử."),
+                    ("Ký hiệu này dùng để làm gì?", "Dấu chấm phẩy", "https://upload.wikimedia.org/wikipedia/commons/4/4a/Semicolon.png", "[V6-ULTIMATE] Dùng để ngăn cách các vế câu trong câu ghép phức tạp."),
+                    ("Thể thơ 6 chữ và 8 chữ?", "Thơ lục bát", "https://upload.wikimedia.org/wikipedia/commons/8/83/Tam_t%E1%BB%B1_kinh_l%E1%BB%A5c_b%C3%A1t_di%E1%BB%85n_%C3%A2m_second_page.png", "[V6-ULTIMATE] Thể thơ dân tộc truyền thống của Việt Nam."),
                 },
             };
 
@@ -260,45 +242,42 @@ namespace SWD305.Controllers
                     Data = item.data,
                     Answer = item.answer,
                     ImageUrl = item.imgUrl,
+                    Explanation = item.hint,
                     IsActive = true,
                 });
             }
             return result;
         }
 
-        // =====================================================================
-        // VÙNG MIỀN — listen_choose
-        // =====================================================================
         private static List<Question> ListenChoose(int gameId, int diff)
         {
             var banks = new Dictionary<int, List<(string data, string answer, string? audioUrl)>>
             {
                 [1] = new()
                 {
-                    ("[\"Giọng Miền Bắc\", \"Giọng Miền Trung\", \"Giọng Miền Nam\"]", "Giọng Miền Bắc", GetWikiUrl("Vi-hanoi-m-chào.ogg")),
-                    ("[\"Giọng Miền Bắc\", \"Giọng Miền Trung\", \"Giọng Miền Nam\"]", "Giọng Miền Nam", GetWikiUrl("Vi-Sài_Gòn-m-Cần_Giờ.ogg")),
-                    ("[\"Chào buổi sáng\", \"Chào buổi trưa\", \"Chào buổi tối\"]", "Chào buổi sáng", GetWikiUrl("Vi-hanoi-m-mười.ogg")), // "mười" is Nord
-                    ("[\"Giọng Bắc\", \"Giọng Nam\", \"Giọng Trung\"]", "Giọng Nam", GetWikiUrl("Vi-Sài_Gòn-f-Hoàng_Văn_Thụ.ogg")),
-                    ("[\"Rất vui gặp bạn\", \"Hẹn gặp lại\", \"Tạm biệt\"]", "Rất vui gặp bạn", GetWikiUrl("Vi-hanoi-m-rất.ogg")),
-                    ("[\"Người Việt Nam\", \"Người Hàn Quốc\", \"Người Trung Quốc\"]", "Người Việt Nam", GetWikiUrl("Vi-saigon-m-nói.ogg")), // Guessing
+                    ("[\"Hà Nội (Bắc) [V5]\", \"Sài Gòn (Nam) [v5]\"]", "Hà Nội (Bắc) [V5]", "https://upload.wikimedia.org/wikipedia/commons/d/d3/Ha_Noi_Northern.ogg"),
+                    ("[\"Hà Nội (Bắc) [v5]\", \"Sài Gòn (Nam) [V5]\"]", "Sài Gòn (Nam) [V5]", "https://upload.wikimedia.org/wikipedia/commons/9/9b/Dong_Nai.ogg"),
+                    ("[\"Hải Phòng (Bắc) [v5]\", \"Bình Dương (Nam) [v5]\"]", "Hải Phòng (Bắc) [v5]", "https://upload.wikimedia.org/wikipedia/commons/c/cb/Hai_Phong.ogg"),
+                    ("[\"Hải Phòng (Bắc) [v5]\", \"Bình Dương (Nam) [v5]\"]", "Bình Dương (Nam) [v5]", "https://upload.wikimedia.org/wikipedia/commons/4/4a/Binh_Duong.ogg"),
+                    ("[\"Hà Nội (v5)\", \"Sài Gòn (v5)\"]", "Hà Nội (v5)", "https://upload.wikimedia.org/wikipedia/commons/6/6c/Ha_noi.ogg"),
+                    ("[\"Hà Nội (v5)\", \"Sài Gòn (v5)\"]", "Sài Gòn (v5)", "https://upload.wikimedia.org/wikipedia/commons/9/9b/Dong_Nai.ogg"),
                 },
                 [2] = new()
                 {
-                    ("[\"Tôi là người Hà Nội\", \"Tôi là người Sài Gòn\", \"Tôi là người Huế\"]", "Tôi là người Hà Nội", GetWikiUrl("Vi-hanoi-m-nay.ogg")),
-                    ("[\"Tôi là người Hà Nội\", \"Tôi là người Sài Gòn\", \"Tôi là người Huế\"]", "Tôi là người Sài Gòn", GetWikiUrl("Vi-Sài_Gòn-m-Cẩm_Mỹ.ogg")),
-                    ("[\"Chúc mừng năm mới\", \"Chúc mừng sinh nhật\", \"Chúc mừng giáng sinh\"]", "Chúc mừng năm mới", GetWikiUrl("Vi-hanoi-m-vị.ogg")),
-                    ("[\"Hẹn gặp lại các bạn\", \"Chào mừng các bạn\", \"Cảm ơn các bạn\"]", "Hẹn gặp lại các bạn", GetWikiUrl("Vi-hanoi-m-từ.ogg")),
-                    ("[\"Trẻ em hôm nay\", \"Thế giới ngày mai\", \"Tình yêu thương\"]", "Trẻ em hôm nay", GetWikiUrl("Vi-hanoi-m-thay đổi.ogg")),
-                    ("[\"Nam bộ\", \"Trung bộ\", \"Bắc bộ\"]", "Nam bộ", GetWikiUrl("Vi-Sài_Gòn-f-Châu_Thành.ogg")),
+                    ("[\"Huế (Trung) [V5]\", \"Vũng Tàu (Nam) [v5]\", \"Hà Nội (Bắc) [v5]\"]", "Huế (Trung) [V5]", "https://upload.wikimedia.org/wikipedia/commons/b/bb/Hue_Northern.ogg"),
+                    ("[\"Huế (v5)\", \"Vũng Tàu (Nam) [V5]\", \"Hà Nội (v5)\"]", "Vũng Tàu (Nam) [V5]", "https://upload.wikimedia.org/wikipedia/commons/c/c6/Vung_Tau_Northern.ogg"),
+                    ("[\"Đà Nẵng [V5]\", \"Sài Gòn [v5]\", \"Hà Nội [v5]\"]", "Đà Nẵng [V5]", "https://upload.wikimedia.org/wikipedia/commons/0/0c/Da_Nang.ogg"),
+                    ("[\"Cần Thơ [V5]\", \"Hà Nội [v5]\", \"Huế [v5]\"]", "Cần Thơ [V5]", "https://upload.wikimedia.org/wikipedia/commons/f/f8/Can_Tho.ogg"),
+                    ("[\"Long An [V5]\", \"Bắc Giang [v5]\", \"Hải Phòng [v5]\"]", "Long An [V5]", "https://upload.wikimedia.org/wikipedia/commons/b/bc/Long_An.ogg"),
                 },
                 [3] = new()
                 {
-                    ("[\"Phát triển bền vững\", \"Kinh tế xanh\", \"Công nghệ số\"]", "Phát triển bền vững", GetWikiUrl("Vi-hanoi-m-nói.ogg")),
-                    ("[\"Gìn giữ bản sắc\", \"Du lịch văn hóa\", \"Lễ hội truyền thống\"]", "Gìn giữ bản sắc", GetWikiUrl("Vi-Sài_Gòn-m-Cần_Giờ.ogg")),
-                    ("[\"Hà Nội nghìn năm văn hiến\", \"Sài Gòn năng động\", \"Huế mộng mơ\"]", "Hà Nội nghìn năm văn hiến", GetWikiUrl("Vi-hanoi-m-mười.ogg")),
-                    ("[\"Đoàn kết là sức mạnh\", \"Lá lành đùm lá rách\", \"Uống nước nhớ nguồn\"]", "Đoàn kết là sức mạnh", GetWikiUrl("Vi-saigon-m-vị.ogg")),
-                    ("[\"Bản sắc dân tộc\", \"Hợp tác quốc tế\", \"Hội nhập kinh tế\"]", "Bản sắc dân tộc", GetWikiUrl("Vi-hanoi-m-thay đổi.ogg")),
-                    ("[\"Bảo tồn di sản\", \"Di tích lịch sử\", \"Kỳ quan thiên nhiên\"]", "Bảo tồn di sản", GetWikiUrl("Vi-Sài_Gòn-f-Hoàng_Văn_Thụ.ogg")),
+                    ("[\"Giọng Miền Bắc [V5]\", \"Giọng Miền Trung [v5]\", \"Giọng Miền Nam [v5]\"]", "Giọng Miền Bắc [V5]", "https://upload.wikimedia.org/wikipedia/commons/d/d3/Ha_Noi_Northern.ogg"),
+                    ("[\"Giọng Miền Bắc [v5]\", \"Giọng Miền Trung [V5]\", \"Giọng Miền Nam [v5]\"]", "Giọng Miền Trung [V5]", "https://upload.wikimedia.org/wikipedia/commons/0/09/Hue.ogg"),
+                    ("[\"Giọng Miền Bắc [v5]\", \"Giọng Miền Trung [v5]\", \"Giọng Miền Nam [V5]\"]", "Giọng Miền Nam [V5]", "https://upload.wikimedia.org/wikipedia/commons/5/56/Ben_Tre.ogg"),
+                    ("[\"Bến Tre [V5]\", \"Tiền Giang [v5]\", \"Vĩnh Long [v5]\"]", "Bến Tre [V5]", "https://upload.wikimedia.org/wikipedia/commons/5/56/Ben_Tre.ogg"),
+                    ("[\"Tiền Giang [V5]\", \"Vĩnh Long [v5]\", \"Long An [v5]\"]", "Tiền Giang [V5]", "https://upload.wikimedia.org/wikipedia/commons/a/a0/Tien_Giang.ogg"),
+                    ("[\"Vĩnh Long [V5]\", \"Bến Tre [v5]\", \"Cần Thơ [v5]\"]", "Vĩnh Long [V5]", "https://upload.wikimedia.org/wikipedia/commons/5/5c/Vinh_Long.ogg"),
                 },
             };
 
@@ -314,16 +293,13 @@ namespace SWD305.Controllers
                     Data = item.data,
                     Answer = item.answer,
                     AudioUrl = item.audioUrl,
-                    Explanation = "Nghe và chọn đáp án chính xác:",
+                    Explanation = "[V5-ULTIMATE] Nghe và chọn giọng vùng miền chính xác:",
                     IsActive = true,
                 });
             }
             return result;
         }
 
-        // =====================================================================
-        // XẾP CÂU — drag_drop_sentence
-        // =====================================================================
         private static List<Question> DragDropSentence(int gameId, int diff)
         {
             var banks = new Dictionary<int, List<(string data, string answer)>>
@@ -360,9 +336,6 @@ namespace SWD305.Controllers
             return MakeQuestions(gameId, "drag_drop_sentence", diff, banks[diff]);
         }
 
-        // =====================================================================
-        // ÔN TẬP — find_error (chọn từ sai trong câu)
-        // =====================================================================
         private static List<Question> FindError(int gameId, int diff)
         {
             var banks = new Dictionary<int, List<(string data, string answer)>>
@@ -387,33 +360,19 @@ namespace SWD305.Controllers
                 },
                 [3] = new()
                 {
-                    ("[\"Học\", \"tập\", \"là\", \"quyền\", \"lợi\", \"và\", \"nhiệm\", \"vụ\"]", "Học"), // Giả sử yêu cầu tìm từ viết hoa sai hoặc ngữ cảnh
-                    ("[\"Công\", \"cha\", \"như\", \"núi\", \"Thái\", \"Sơng\"]", "Sơng"),
-                    ("[\"Nghĩa\", \"mẹ\", \"như\", \"nước\", \"trong\", \" nguồn\", \"chảy\", \"ra\"]", " nguồn"), // Khoảng trắng dư
-                    ("[\"Một\", \"con\", \"ngựa\", \"đau\", \"cả\", \"tàu\", \"bỏ\", \"cỏ\"]", "tàu"), // Ví dụ logic: tàu -> tàu? (sai vần)
-                    ("[\"Ăn\", \"quả\", \"nhớ\", \"kẻ\", \"trồng\", \"cây\"]", "Ăn"), // Ví dụ tìm lỗi dấu
-                    ("[\"Gần\", \"mực\", \"thì\", \"đen\", \"gần\", \"đèn\", \"thì\", \"sáng\"]", "Gần"), 
+                    ("[\"Yếu\", \"tố\", \"biểu\", \"cãm\", \"trong\", \"văn\", \"bản\"]", "cãm"),
+                    ("[\"Những\", \"câu\", \"thơ\", \"lọc\", \"bát\", \"ngọt\", \"ngào\"]", "lọc"),
+                    ("[\"Biện\", \"pháp\", \"tu\", \"từ\", \"hoáng\", \"dụ\"]", "hoáng"),
+                    ("[\"Phong\", \"cách\", \"ngôn\", \"ngữ\", \"nghệ\", \"thuộc\"]", "thuộc"),
+                    ("[\"Sự\", \"nghiệp\", \"giáng\", \"dục\", \"con\", \"người\"]", "giáng"),
+                    ("[\"Đoàn\", \"kết\", \"là\", \"sức\", \"mạnh\", \"vô\", \" điệc\"]", " điệc"),
                 },
-            };
-            // Cập nhật lại logic diff 3 cho rõ ràng hơn (sai chính tả tinh vi)
-            banks[3] = new()
-            {
-                 ("[\"Yếu\", \"tố\", \"biểu\", \"cãm\", \"trong\", \"văn\", \"bản\"]", "cãm"),
-                 ("[\"Những\", \"câu\", \"thơ\", \"lọc\", \"bát\", \"ngọt\", \"ngào\"]", "lọc"),
-                 ("[\"Biện\", \"pháp\", \"tu\", \"từ\", \"hoáng\", \"dụ\"]", "hoáng"),
-                 ("[\"Phong\", \"cách\", \"ngôn\", \"ngữ\", \"nghệ\", \"thuộc\"]", "thuộc"),
-                 ("[\"Sự\", \"nghiệp\", \"giáng\", \"dục\", \"con\", \"người\"]", "giáng"),
-                 ("[\"Đoàn\", \"kết\", \"là\", \"sức\", \"mạnh\", \"vô\", \" điệc\"]", " điệc"),
             };
 
             return MakeQuestions(gameId, "find_error", diff, banks[diff]);
         }
 
-        // =====================================================================
-        // HELPER: turn bank into Question list
-        // =====================================================================
-        private static List<Question> MakeQuestions(int gameId, string type, int diff,
-            List<(string data, string answer)> bank)
+        private static List<Question> MakeQuestions(int gameId, string type, int diff, List<(string data, string answer)> bank)
         {
             var result = new List<Question>();
             for (int i = 0; i < Math.Min(6, bank.Count); i++)

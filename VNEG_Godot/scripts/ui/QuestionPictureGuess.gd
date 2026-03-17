@@ -16,14 +16,33 @@ func _do_setup() -> void:
 	image_rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 	add_child(image_rect)
 	
+	# Hint / Description - Check multiple common keys used in different versions
+	var hint_text = ""
+	var keys_to_check = ["explanation", "Explanation", "description", "hint"]
+	for k in keys_to_check:
+		if question_data.has(k) and str(question_data[k]) != "" and str(question_data[k]) != "null":
+			hint_text = str(question_data[k])
+			break
+	
+	print("[PictureGuess DEBUG] Data keys: ", question_data.keys())
+	print("[PictureGuess DEBUG] Found Hint: ", hint_text)
+	
+	if hint_text != "":
+		var hint_lbl = Label.new()
+		hint_lbl.text = "Gợi ý: " + hint_text
+		hint_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		hint_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		hint_lbl.add_theme_color_override("font_color", Color.YELLOW)
+		add_child(hint_lbl)
+	
 	input_field = LineEdit.new()
-	input_field.placeholder_text = "Nhập từ khóa theo hình..."
+	input_field.placeholder_text = "Nhập câu trả lời..."
 	input_field.custom_minimum_size = Vector2(0, 50)
 	input_field.alignment = HORIZONTAL_ALIGNMENT_CENTER
 	add_child(input_field)
 	
 	var submit_btn = Button.new()
-	submit_btn.text = "Xác nhận"
+	submit_btn.text = "Kiểm tra"
 	submit_btn.custom_minimum_size = Vector2(0, 50)
 	add_child(submit_btn)
 	
@@ -49,8 +68,8 @@ func _load_image(url: String) -> void:
 	add_child(image_loader)
 	image_loader.request_completed.connect(_on_image_downloaded)
 	
-	# Common Browser User-Agent to avoid blocks
-	var headers = ["User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"]
+	# Specific User-Agent to avoid being blocked by Wikimedia Commons
+	var headers = ["User-Agent: VNEG_Godot_Game/1.5 (contact: thinhnt@fpt.edu.vn)"]
 	var err = image_loader.request(url, headers)
 	if err != OK:
 		push_error("PictureGuess: HTTPRequest setup failed for " + url)

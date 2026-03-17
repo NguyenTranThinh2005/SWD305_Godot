@@ -44,27 +44,43 @@ func _show_question(index: int) -> void:
 		return
 		
 	var q_data = GameManager.game_questions[index]
-	var question_text = ""
+	var q_id = q_data.get("id", 0)
 	var q_type = str(q_data.get("questionType", "")).to_lower()
 	
-	if q_type == "multiple_choice" or q_type == "listen_choose" or q_type == "picture_guess":
-		question_text = str(q_data.get("explanation", "Nghe/Nhìn và chọn đáp án đúng:"))
-	elif q_type == "drag_drop_sentence":
-		question_text = "Sắp xếp các từ sau thành câu hoàn chỉnh:"
-	else:
-		question_text = str(q_data.get("data", ""))
+	# 1. Determine Title (display_text)
+	var display_text = ""
+	var title_keys = ["data", "Data", "question", "title"]
+	for k in title_keys:
+		if q_data.has(k) and str(q_data[k]) != "" and str(q_data[k]) != "null":
+			display_text = str(q_data[k])
+			break
+	if display_text == "": display_text = "Câu hỏi " + str(index + 1)
 	
-	# The text of the question
+	# 2. Determine Hint (hint_text)
+	var hint_text = ""
+	var hint_keys = ["explanation", "Explanation", "hint", "description"]
+	for k in hint_keys:
+		if q_data.has(k) and str(q_data[k]) != "" and str(q_data[k]) != "null":
+			hint_text = str(q_data[k])
+			break
+	
 	var hint_str = ""
-	if q_data.has("explanation") and typeof(q_data["explanation"]) == TYPE_STRING and q_data["explanation"] != "" and q_type != "multiple_choice":
-		hint_str = "\n💡 " + q_data["explanation"]
+	if hint_text != "":
+		hint_str = "\n💡 " + hint_text
 		
-	var display_text = question_text
 	if display_text.begins_with("[") and display_text.ends_with("]"):
 		# If it's a JSON string by mistake, clean it
 		display_text = display_text.replace("[\"", "").replace("\"]", "").replace("\", \"", " / ")
 		
+	# Speical case for Drag & Drop
+	if q_type == "drag_drop_sentence":
+		display_text = "Sắp xếp các từ sau thành câu hoàn chỉnh:"
+		
 	question_label.text = "Câu " + str(index + 1) + ": " + display_text + hint_str
+	
+	print("[DEBUG AntigravityWorld] Question ID: ", q_id, " Type: ", q_type)
+	print("[DEBUG AntigravityWorld] Title: ", display_text)
+	print("[DEBUG AntigravityWorld] Hint: ", hint_text)
 		
 	# Xóa nút/Question UI cũ
 	for child in choices_box.get_children():
@@ -92,7 +108,7 @@ func _show_question(index: int) -> void:
 		choices_box.add_child(q_node)
 		q_node.setup(q_data)
 		q_node.answer_submitted.connect(func(is_correct, raw_ans):
-			_on_answer_submitted(index, q_data.get("id", 0), is_correct, raw_ans)
+			_on_answer_submitted(index, q_id, is_correct, raw_ans)
 		)
 
 func _on_answer_submitted(_q_index: int, q_id: int, is_correct: bool, raw_ans: Variant) -> void:
