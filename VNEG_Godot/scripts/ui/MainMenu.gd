@@ -134,6 +134,23 @@ func _on_play_pressed() -> void:
 	play_button.text = "Đang khởi tạo game..."
 	
 	var user_id = int(AuthManager.current_user.get("id", 0))
+	
+	# GUEST MODE: Skip start_game (no DB session)
+	if user_id == 0:
+		play_button.text = "Dang tai cau hoi (Khach)..."
+		var q_res = await API.get_questions_by_game(selected_game_id)
+		if q_res["ok"] and typeof(q_res["data"]) == TYPE_ARRAY:
+			GameManager.start_session(0, selected_game_id) # Session 0 = Guest
+			GameManager.game_questions = q_res["data"]
+			get_tree().change_scene_to_file("res://scenes/AntigravityWorld.tscn")
+		else:
+			play_button.text = "Loi tai cau hoi Khach!"
+			await get_tree().create_timer(2.0).timeout
+			play_button.disabled = false
+			play_button.text = "Choi game nay"
+		return
+
+	# REGULAR USER MODE: Create server session
 	var start_response = await API.start_game(user_id, selected_game_id)
 	
 	if start_response["ok"] and typeof(start_response["data"]) == TYPE_DICTIONARY:
@@ -141,7 +158,7 @@ func _on_play_pressed() -> void:
 		GameManager.start_session(session_id, selected_game_id)
 		
 		# Now fetch questions for this session
-		play_button.text = "Đang tải câu hỏi..."
+		play_button.text = "Dang tải cau hoi..."
 		var q_response = await API.get_questions(session_id)
 		
 		if q_response["ok"] and typeof(q_response["data"]) == TYPE_ARRAY:
@@ -150,21 +167,26 @@ func _on_play_pressed() -> void:
 				GameManager.game_questions = q_list
 				get_tree().change_scene_to_file("res://scenes/AntigravityWorld.tscn")
 			else:
-				play_button.text = "Game này không có câu hỏi!"
+				play_button.text = "Game nay khong co cau hoi!"
 				await get_tree().create_timer(2.0).timeout
 				play_button.disabled = false
-				play_button.text = "Chơi game này"
+				play_button.text = "Choi game nay"
 		else:
-			play_button.text = "Lỗi tải câu hỏi!"
+			play_button.text = "Loi tai cau hoi!"
 			await get_tree().create_timer(2.0).timeout
 			play_button.disabled = false
-			play_button.text = "Chơi game này"
+			play_button.text = "Choi game nay"
 	else:
-		play_button.text = "Lỗi khởi tạo Session!"
+		play_button.text = "Loi khoi tao Session!"
 		await get_tree().create_timer(2.0).timeout
 		play_button.disabled = false
-		play_button.text = "Chơi game này"
+		play_button.text = "Choi game nay"
+
 
 func _on_logout_pressed() -> void:
-	await API.logout() # Wait for session cleanup
+	if AuthManager.get_token() == "GUEST_TOKEN":
+		AuthManager.clear_session()
+	else:
+		await API.logout() # Wait for session cleanup
+		
 	get_tree().change_scene_to_file("res://scenes/LoginScreen.tscn")

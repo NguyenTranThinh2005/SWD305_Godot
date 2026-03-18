@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 
 namespace SWD305.Models;
@@ -16,6 +16,10 @@ public partial class Profile
     public string? Badges { get; set; }
 
     public string? WeeklyGraph { get; set; }
+    public int? TotalCoins { get; set; }
+    public int? TotalStars { get; set; }
+    public int? Level { get; set; }
+    public int? Exp { get; set; }
 
     public virtual User User { get; set; } = null!;
 }

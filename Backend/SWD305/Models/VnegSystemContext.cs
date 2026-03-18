@@ -246,6 +246,10 @@ public partial class VnegSystemContext : DbContext
             entity.Property(e => e.TopErrors).HasColumnName("top_errors");
             entity.Property(e => e.UserId).HasColumnName("user_id");
             entity.Property(e => e.WeeklyGraph).HasColumnName("weekly_graph");
+            entity.Property(e => e.TotalCoins).HasColumnName("total_coins");
+            entity.Property(e => e.TotalStars).HasColumnName("total_stars");
+            entity.Property(e => e.Level).HasColumnName("level");
+            entity.Property(e => e.Exp).HasColumnName("exp");
 
             entity.HasOne(d => d.User).WithMany(p => p.Profiles)
                 .HasForeignKey(d => d.UserId)

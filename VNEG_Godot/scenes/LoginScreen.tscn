@@ -3,7 +3,7 @@
 [ext_resource type="Script" path="res://scripts/ui/LoginScreen.gd" id="1_loginscreen"]
 [ext_resource type="Theme" uid="uid://d3u6x0y8wkpjk" path="res://assets/ui/premium_theme.tres" id="2_theme"]
 [ext_resource type="Texture2D" uid="uid://df58o622g0c5j" path="res://assets/bg/space_bg.tres" id="3_bg"]
->>>>>>> main
+
 
 [node name="LoginScreen" type="Control" unique_id=1256462904]
 layout_mode = 3
@@ -82,6 +82,11 @@ text = "🚀 Đăng nhập"
 layout_mode = 2
 size_flags_horizontal = 4
 text = "Chưa có tài khoản? Đăng ký ngay"
+
+[node name="ToGuestButton" type="LinkButton" parent="CenterContainer/PanelContainer/VBoxContainer/LoginBox"]
+layout_mode = 2
+size_flags_horizontal = 4
+text = "Chơi ngay với tư cách Khách"
 
 [node name="RegisterBox" type="VBoxContainer" parent="CenterContainer/PanelContainer/VBoxContainer"]
 unique_name_in_owner = true
@@ -171,6 +176,31 @@ text = "✨ Đăng ký ngay"
 layout_mode = 2
 size_flags_horizontal = 4
 text = "Đã có tài khoản? Đăng nhập"
+
+[node name="GuestBox" type="VBoxContainer" parent="CenterContainer/PanelContainer/VBoxContainer"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+theme_override_constants/separation = 15
+
+[node name="Label" type="Label" parent="CenterContainer/PanelContainer/VBoxContainer/GuestBox"]
+layout_mode = 2
+text = "Nhập tên của bạn để chơi ngay:"
+horizontal_alignment = 1
+
+[node name="GuestNameInput" type="LineEdit" parent="CenterContainer/PanelContainer/VBoxContainer/GuestBox"]
+layout_mode = 2
+placeholder_text = "Tên Khách"
+
+[node name="SubmitGuestButton" type="Button" parent="CenterContainer/PanelContainer/VBoxContainer/GuestBox"]
+custom_minimum_size = Vector2(0, 50)
+layout_mode = 2
+text = "🎮 Vào game"
+
+[node name="ToLoginButtonGuest" type="LinkButton" parent="CenterContainer/PanelContainer/VBoxContainer/GuestBox"]
+layout_mode = 2
+size_flags_horizontal = 4
+text = "Quay lại Đăng nhập"
 
 [node name="StatusLabel" type="Label" parent="CenterContainer/PanelContainer/VBoxContainer"]
 layout_mode = 2

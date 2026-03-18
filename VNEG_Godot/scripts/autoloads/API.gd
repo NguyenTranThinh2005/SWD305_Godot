@@ -4,7 +4,7 @@ extends Node
 ## Quản lý HTTP Requests tới ASP.NET Backend.
 ## Sử dụng node HTTPRequest để gọi các RESTful APIs.
 
-const API_BASE = "http://localhost:5290" # Thay đổi port tương ứng với file launchSettings.json
+const API_BASE = "http://localhost:5000" # Thay đổi port tương ứng với file launchSettings.json
 
 ## Hàm tiện ích để thực hiện HTTP Request.
 ## Trả về một Dictionary có dạng: { "ok": bool, "status": int, "data": Variant }
@@ -98,6 +98,10 @@ func start_game(user_id: int, game_id: int) -> Dictionary:
 
 func get_questions(session_id: int) -> Dictionary:
 	return await fetch("/api/game/" + str(session_id) + "/questions")
+
+func get_questions_by_game(game_id: int) -> Dictionary:
+	return await fetch("/api/questions/by-game/" + str(game_id))
+
 
 func submit_answers(session_id: int, answers: Array) -> Dictionary:
 	# answers: Array của Dictionary -> [{ "questionId": 1, "selectedAnswerId": 0 }, ...]

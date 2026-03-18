@@ -160,13 +160,47 @@ namespace SWD305.Controllers
             }
 
             int total = request.Answers.Count;
+            int streak = 0;
+            decimal comboMultiplier = 1.0m;
 
-            session.Score = correctCount * 10;
+            foreach (var item in request.Answers)
+            {
+                if (correctQuestionIds.Contains(item.QuestionId))
+                {
+                    streak++;
+                    comboMultiplier = Math.Min(1.0m + (Math.Floor(streak / 3.0m) * 0.5m), 3.0m);
+                }
+                else
+                {
+                    streak = 0;
+                }
+            }
+
+            int baseScore = correctCount * 20;
+            int rewardStars = (int)Math.Floor(correctCount / 3.0);
+            if (rewardStars > 3) rewardStars = 3;
+            if (rewardStars < 1 && correctCount > 0) rewardStars = 1;
+
+            int rewardCoins = (int)(10 * comboMultiplier * correctCount);
+            int perfectBonus = (wrongQuestionIds.Count == 0 && total > 0) ? 500 : 0;
+
+            session.Score = (int)((baseScore + (correctCount * 5) + perfectBonus) * comboMultiplier);
             session.Accuracy = total == 0 ? 0 : (correctCount * 100m) / total;
-            session.Stars = session.Accuracy >= 90 ? 3 :
-                            session.Accuracy >= 70 ? 2 : 1;
-            session.Coins = session.Stars * 5;
+            session.Stars = rewardStars;
+            session.Coins = rewardCoins;
             session.CompletedAt = DateTime.Now;
+
+            // =============================
+            // PERSIST TO PROFILE
+            // =============================
+            var profile = await _context.Profiles.FirstOrDefaultAsync(p => p.UserId == session.UserId);
+            if (profile != null)
+            {
+                profile.TotalCoins = (profile.TotalCoins ?? 0) + session.Coins;
+                profile.TotalStars = (profile.TotalStars ?? 0) + session.Stars;
+                profile.Exp = (profile.Exp ?? 0) + (int)(session.Score ?? 0);
+                profile.Level = 1 + (profile.Exp / 1000);
+            }
 
             // =============================
             // GRAMMAR TRACKING (optional for demo)

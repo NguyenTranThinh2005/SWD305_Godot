@@ -1,45 +1,124 @@
 extends QuestionBase
+## QuestionFillBlank.gd — Dien tu vao cho trong
 
-@onready var container = VBoxContainer.new()
 var input_field: LineEdit
 
 func _do_setup() -> void:
-	add_child(container)
-	container.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	alignment = BoxContainer.ALIGNMENT_CENTER
+	add_theme_constant_override("separation", 12)
+	size_flags_horizontal = Control.SIZE_EXPAND_FILL
+
+	var raw_data = question_data.get("data", question_data.get("Data", ""))
+	var sentence_text = ""
+	var hint_text = ""
+
+	var data_dict = null
+	if typeof(raw_data) == TYPE_DICTIONARY:
+		data_dict = raw_data
+	elif typeof(raw_data) == TYPE_STRING and raw_data != "":
+		var json = JSON.new()
+		if json.parse(raw_data) == OK and typeof(json.data) == TYPE_DICTIONARY:
+			data_dict = json.data
 	
+	if data_dict != null:
+		sentence_text = str(data_dict.get("question", data_dict.get("Question", "")))
+		hint_text = str(data_dict.get("hint", data_dict.get("Hint", "")))
+	
+	if sentence_text == "" and typeof(raw_data) == TYPE_STRING and not raw_data.begins_with("{"):
+		sentence_text = raw_data
+
+	if sentence_text == "": sentence_text = "Dien vao cho trong"
+
+	# Sentence display
+	var sentence_lbl = Label.new()
+	sentence_lbl.text = sentence_text
+	sentence_lbl.add_theme_font_size_override("font_size", 22)
+	sentence_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	sentence_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	add_child(sentence_lbl)
+
+	# Hint
+	if hint_text != "":
+		var hint_lbl = Label.new()
+		hint_lbl.text = "Goi y: " + hint_text
+		hint_lbl.add_theme_font_size_override("font_size", 16)
+		hint_lbl.add_theme_color_override("font_color", Color(1.0, 0.85, 0.3))
+		hint_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		add_child(hint_lbl)
+
+	# Input field - styled
 	input_field = LineEdit.new()
-	input_field.placeholder_text = "Nhập câu trả lời..."
+	input_field.placeholder_text = "Nhap cau tra loi..."
+	input_field.add_theme_font_size_override("font_size", 22)
 	input_field.custom_minimum_size = Vector2(0, 50)
 	input_field.alignment = HORIZONTAL_ALIGNMENT_CENTER
-	container.add_child(input_field)
-	
+	input_field.caret_blink = true
+
+	var input_style = StyleBoxFlat.new()
+	input_style.bg_color = Color(0.1, 0.1, 0.15, 1)
+	input_style.border_width_bottom = 3
+	input_style.border_color = Color(0.42, 0.39, 1.0, 1)
+	input_style.corner_radius_top_left = 6
+	input_style.corner_radius_top_right = 6
+	input_style.content_margin_left = 12
+	input_style.content_margin_right = 12
+	input_style.content_margin_top = 10
+	input_style.content_margin_bottom = 10
+	input_field.add_theme_stylebox_override("normal", input_style)
+	add_child(input_field)
+
 	var submit_btn = Button.new()
-	submit_btn.text = "Xác nhận"
-	submit_btn.custom_minimum_size = Vector2(0, 50)
-	container.add_child(submit_btn)
-	
+	submit_btn.text = "Xac nhan"
+	submit_btn.add_theme_font_size_override("font_size", 20)
+	submit_btn.custom_minimum_size = Vector2(200, 48)
+	add_child(submit_btn)
+
 	submit_btn.pressed.connect(_on_submit_pressed)
 	input_field.text_submitted.connect(func(_text): _on_submit_pressed())
+
+	# Auto-focus
+	input_field.call_deferred("grab_focus")
 
 func _on_submit_pressed() -> void:
 	var user_ans = input_field.text.strip_edges()
 	if user_ans.is_empty():
 		return
-		
+
 	input_field.editable = false
-	var btn = container.get_child(1) # submit_btn
-	btn.disabled = true
-	
-	var correct_ans_str = str(question_data.get("answer", "")).strip_edges()
+	for child in get_children():
+		if child is Button:
+			child.disabled = true
+
+	var correct_ans_str = str(question_data.get("answer", question_data.get("Answer", ""))).strip_edges()
 	var is_correct = (user_ans.to_lower() == correct_ans_str.to_lower())
-	
+
+	# Visual feedback style
+	var result_style = StyleBoxFlat.new()
+	result_style.content_margin_left = 12
+	result_style.content_margin_right = 12
+	result_style.content_margin_top = 10
+	result_style.content_margin_bottom = 10
+	result_style.corner_radius_top_left = 6
+	result_style.corner_radius_top_right = 6
+
 	if is_correct:
-		input_field.modulate = Color.GREEN
+		result_style.bg_color = Color(0.1, 0.3, 0.15, 1)
+		result_style.border_width_bottom = 3
+		result_style.border_color = Color(0.3, 1.0, 0.4, 1)
+		input_field.add_theme_stylebox_override("read_only", result_style)
+		input_field.add_theme_color_override("font_uneditable_color", Color(0.3, 1.0, 0.5))
 	else:
-		input_field.modulate = Color.RED
+		result_style.bg_color = Color(0.3, 0.1, 0.1, 1)
+		result_style.border_width_bottom = 3
+		result_style.border_color = Color(1.0, 0.3, 0.3, 1)
+		input_field.add_theme_stylebox_override("read_only", result_style)
+		input_field.add_theme_color_override("font_uneditable_color", Color(1.0, 0.4, 0.4))
+
 		var lbl = Label.new()
-		lbl.text = "Đáp án đúng: " + correct_ans_str
-		lbl.modulate = Color.GREEN
-		container.add_child(lbl)
-		
+		lbl.text = "Dap an dung: " + correct_ans_str
+		lbl.add_theme_font_size_override("font_size", 18)
+		lbl.add_theme_color_override("font_color", Color(0.3, 1.0, 0.5))
+		lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		add_child(lbl)
+
 	submit(is_correct, user_ans)

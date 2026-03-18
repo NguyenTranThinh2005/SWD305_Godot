@@ -12,6 +12,7 @@ extends Control
 @onready var password_input: LineEdit = %LoginBox/PasswordInput
 @onready var login_button: Button = %LoginBox/LoginButton
 @onready var to_register_button: LinkButton = %LoginBox/ToRegisterButton
+@onready var to_guest_button: LinkButton = %LoginBox/ToGuestButton
 
 # Register Fields
 @onready var reg_email_input: LineEdit = %RegisterBox/RegEmailInput
@@ -22,16 +23,26 @@ extends Control
 @onready var submit_register_button: Button = %RegisterBox/SubmitRegisterButton
 @onready var to_login_button: LinkButton = %RegisterBox/ToLoginButton
 
+# Guest Fields
+@onready var guest_box: VBoxContainer = %GuestBox
+@onready var guest_name_input: LineEdit = %GuestBox/GuestNameInput
+@onready var submit_guest_button: Button = %GuestBox/SubmitGuestButton
+@onready var to_login_button_guest: LinkButton = %GuestBox/ToLoginButtonGuest
+
 # Shared
-@onready var status_label: Label = $CenterContainer/VBoxContainer/StatusLabel
+@onready var status_label: Label = $CenterContainer/PanelContainer/VBoxContainer/StatusLabel
 
 func _ready():
 	# Kết nối tín hiệu
 	login_button.pressed.connect(_on_login_pressed)
 	to_register_button.pressed.connect(_show_register)
+	to_guest_button.pressed.connect(_show_guest)
 	
 	submit_register_button.pressed.connect(_on_register_pressed)
 	to_login_button.pressed.connect(_show_login)
+	
+	submit_guest_button.pressed.connect(_on_guest_pressed)
+	to_login_button_guest.pressed.connect(_show_login)
 	
 	# Khởi tạo mặc định
 	_show_login()
@@ -43,11 +54,19 @@ func _ready():
 func _show_login():
 	login_box.show()
 	register_box.hide()
+	guest_box.hide()
 	show_status("", Color.WHITE)
 
 func _show_register():
 	login_box.hide()
 	register_box.show()
+	guest_box.hide()
+	show_status("", Color.WHITE)
+
+func _show_guest():
+	login_box.hide()
+	register_box.hide()
+	guest_box.show()
 	show_status("", Color.WHITE)
 
 func _on_login_pressed() -> void:
@@ -78,11 +97,17 @@ func _on_login_pressed() -> void:
 		AuthManager.save_session(token, user_info)
 		_go_to_main_menu()
 	else:
-		var err_msg = "Lỗi đăng nhập."
-		if response["data"] is String:
-			err_msg = response["data"]
-		elif response["data"] is Dictionary and response["data"].has("message"):
-			err_msg = response["data"]["message"]
+		var err_msg = "Lỗi đăng nhập: "
+		
+		if typeof(response["data"]) == TYPE_STRING:
+			err_msg += response["data"]
+		elif typeof(response["data"]) == TYPE_DICTIONARY:
+			if response["data"].has("message"):
+				err_msg += str(response["data"]["message"])
+			else:
+				err_msg += JSON.stringify(response["data"])
+		else:
+			err_msg += "Mã lỗi HTTP " + str(response["status"])
 		
 		show_status(err_msg, Color.RED)
 
@@ -110,13 +135,13 @@ func _on_register_pressed() -> void:
 	
 	# Gọi API Register với tất cả các trường
 	var response = await API.register(
-	email,
-	password,
-	phone,
-	grade,
-	region_val,
-	"🐉"
-)
+		email,
+		password,
+		phone,
+		grade,
+		region_val,
+		"🐉"
+	)
 	print("STATUS:", response.status)
 	print("DATA:", response.data)
 	
@@ -129,14 +154,39 @@ func _on_register_pressed() -> void:
 		_show_login()
 	else:
 		var err_res = response["data"]
-		var err_msg = "Lỗi đăng ký."
+		var err_msg = "Lỗi đăng ký: "
 		
-		if err_res is String:
-			err_msg = err_res
-		elif err_res is Dictionary:
-			err_msg = err_res.get("message", "Lỗi dữ liệu đăng ký.")
-		
+		if typeof(err_res) == TYPE_STRING:
+			err_msg += err_res
+		elif typeof(err_res) == TYPE_DICTIONARY:
+			if err_res.has("message"):
+				err_msg += str(err_res["message"]) + " "
+			if err_res.has("detail"):
+				err_msg += str(err_res["detail"])
+			if not err_res.has("message") and not err_res.has("detail"):
+				err_msg += JSON.stringify(err_res)
+		else:
+			err_msg += "HTTP " + str(response["status"])
+			
 		show_status(err_msg, Color.RED)
+
+func _on_guest_pressed() -> void:
+	var guest_name = guest_name_input.text.strip_edges()
+	if guest_name == "":
+		show_status("Vui lòng nhập Tên Khách!", Color.RED)
+		return
+		
+	var mock_user = {
+		"id": 0,
+		"email": "guest@vneg.local",
+		"username": guest_name,
+		"role": "user",
+		"avatarUrl": "🐉"
+	}
+	
+	AuthManager.save_session("GUEST_TOKEN", mock_user)
+	show_status("Đang vào game...", Color.GREEN)
+	_go_to_main_menu()
 
 func show_status(msg: String, color: Color) -> void:
 	if status_label:
@@ -146,8 +196,11 @@ func show_status(msg: String, color: Color) -> void:
 func set_loading(is_loading: bool) -> void:
 	login_button.disabled = is_loading
 	submit_register_button.disabled = is_loading
+	submit_guest_button.disabled = is_loading
+	to_guest_button.disabled = is_loading
 	email_input.editable = !is_loading
 	reg_email_input.editable = !is_loading
+	guest_name_input.editable = !is_loading
 
 func _go_to_main_menu() -> void:
 	var scene_path = "res://scenes/MainMenu.tscn"

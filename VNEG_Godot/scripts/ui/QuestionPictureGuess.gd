@@ -1,101 +1,139 @@
 extends QuestionBase
+## QuestionPictureGuess.gd — Nhin tranh doan tu
 
 var image_rect: TextureRect
 var input_field: LineEdit
 var image_loader: HTTPRequest
 
 func _do_setup() -> void:
-	# Inherits from QuestionBase (VBoxContainer)
-	# Set some spacing/alignment
 	alignment = BoxContainer.ALIGNMENT_CENTER
-	add_theme_constant_override("separation", 20)
+	add_theme_constant_override("separation", 12)
+	size_flags_horizontal = Control.SIZE_EXPAND_FILL
+
+	# Parse question text from data
+	var raw_data = question_data.get("data", question_data.get("Data", ""))
+	var data_dict = null
+	if typeof(raw_data) == TYPE_DICTIONARY:
+		data_dict = raw_data
+	elif typeof(raw_data) == TYPE_STRING and raw_data != "":
+		var json = JSON.new()
+		if json.parse(raw_data) == OK and typeof(json.data) == TYPE_DICTIONARY:
+			data_dict = json.data
 	
+	var q_text = ""
+	if data_dict != null:
+		q_text = str(data_dict.get("question", data_dict.get("Question", "")))
+	
+	if q_text == "" and typeof(raw_data) == TYPE_STRING and not raw_data.begins_with("{"):
+		q_text = raw_data
+
+	if q_text == "":
+		q_text = "Doán từ từ bức tranh"
+
+	# Image container with loading placeholder
+	var img_panel = PanelContainer.new()
+	img_panel.custom_minimum_size = Vector2(0, 140)
+	img_panel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	var img_style = StyleBoxFlat.new()
+	img_style.bg_color = Color(0.1, 0.1, 0.15, 1)
+	img_style.corner_radius_top_left = 12
+	img_style.corner_radius_top_right = 12
+	img_style.corner_radius_bottom_right = 12
+	img_style.corner_radius_bottom_left = 12
+	img_panel.add_theme_stylebox_override("panel", img_style)
+
 	image_rect = TextureRect.new()
-	image_rect.custom_minimum_size = Vector2(320, 240)
+	image_rect.custom_minimum_size = Vector2(200, 140)
 	image_rect.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	image_rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-	add_child(image_rect)
-	
+	image_rect.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	img_panel.add_child(image_rect)
+	add_child(img_panel)
+
+	# Question text
+	if q_text != "" and q_text != raw_data:
+		var q_lbl = Label.new()
+		q_lbl.text = q_text
+		q_lbl.add_theme_font_size_override("font_size", 18)
+		q_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		q_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		add_child(q_lbl)
+
+	# Input
 	input_field = LineEdit.new()
-	input_field.placeholder_text = "Nhập từ khóa theo hình..."
-	input_field.custom_minimum_size = Vector2(0, 50)
+	input_field.placeholder_text = "Nhap cau tra loi..."
+	input_field.add_theme_font_size_override("font_size", 20)
+	input_field.custom_minimum_size = Vector2(0, 45)
 	input_field.alignment = HORIZONTAL_ALIGNMENT_CENTER
+	input_field.caret_blink = true
+
+	var input_style = StyleBoxFlat.new()
+	input_style.bg_color = Color(0.1, 0.1, 0.15, 1)
+	input_style.border_width_bottom = 3
+	input_style.border_color = Color(0.42, 0.39, 1.0, 1)
+	input_style.corner_radius_top_left = 6
+	input_style.corner_radius_top_right = 6
+	input_style.content_margin_left = 12
+	input_style.content_margin_right = 12
+	input_style.content_margin_top = 8
+	input_style.content_margin_bottom = 8
+	input_field.add_theme_stylebox_override("normal", input_style)
 	add_child(input_field)
-	
+
 	var submit_btn = Button.new()
-	submit_btn.text = "Xác nhận"
-	submit_btn.custom_minimum_size = Vector2(0, 50)
+	submit_btn.text = "Xac nhan"
+	submit_btn.add_theme_font_size_override("font_size", 20)
+	submit_btn.custom_minimum_size = Vector2(200, 45)
 	add_child(submit_btn)
-	
+
 	submit_btn.pressed.connect(_on_submit_pressed)
 	input_field.text_submitted.connect(func(_text): _on_submit_pressed())
-	
-	# Load Image
-	var img_url = str(question_data.get("imageUrl", ""))
-	if img_url == "":
-		img_url = str(question_data.get("image_url", "")) # Fallback to snake_case
-		
-	if img_url != "":
-		_load_image(img_url)
-	else:
-		push_warning("PictureGuess: imageUrl is missing in q_data")
 
-func _load_image(url: String) -> void:
-	if not url.begins_with("http"): 
-		push_error("PictureGuess: Invalid URL: " + url)
-		return
-	
-	image_loader = HTTPRequest.new()
-	add_child(image_loader)
-	image_loader.request_completed.connect(_on_image_downloaded)
-	
-	# Common Browser User-Agent to avoid blocks
-	var headers = ["User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"]
-	var err = image_loader.request(url, headers)
-	if err != OK:
-		push_error("PictureGuess: HTTPRequest setup failed for " + url)
+	# Load Image using base helper
+	var img_url = str(question_data.get("imageUrl", question_data.get("image_url", question_data.get("ImageUrl", ""))))
+	_add_image_display(img_url)
 
-func _on_image_downloaded(_result, response_code, _headers, body) -> void:
-	if response_code == 200:
-		var image = Image.new()
-		var err = image.load_jpg_from_buffer(body)
-		if err != OK:
-			err = image.load_png_from_buffer(body)
-		if err != OK:
-			err = image.load_webp_from_buffer(body)
-			
-		if err == OK:
-			var texture = ImageTexture.create_from_image(image)
-			image_rect.texture = texture
-		else:
-			push_error("PictureGuess: Failed to parse image body. Size: " + str(body.size()))
-	else:
-		push_error("PictureGuess: Image download failed. Code: " + str(response_code))
-	
-	if is_instance_valid(image_loader):
-		image_loader.queue_free()
+	input_field.call_deferred("grab_focus")
 
 func _on_submit_pressed() -> void:
 	var user_ans = input_field.text.strip_edges()
 	if user_ans.is_empty():
 		return
-		
+
 	input_field.editable = false
-	var btn = get_child(get_child_count() - 1) # last child is submit_btn
-	if btn is Button:
-		btn.disabled = true
-	
-	var correct_ans_str = str(question_data.get("answer", "")).strip_edges()
+	for child in get_children():
+		if child is Button:
+			child.disabled = true
+
+	var correct_ans_str = str(question_data.get("answer", question_data.get("Answer", ""))).strip_edges()
 	var is_correct = (user_ans.to_lower() == correct_ans_str.to_lower())
-	
+
+	var result_style = StyleBoxFlat.new()
+	result_style.content_margin_left = 12
+	result_style.content_margin_right = 12
+	result_style.content_margin_top = 8
+	result_style.content_margin_bottom = 8
+	result_style.corner_radius_top_left = 6
+	result_style.corner_radius_top_right = 6
+
 	if is_correct:
-		input_field.modulate = Color.GREEN
+		result_style.bg_color = Color(0.1, 0.3, 0.15, 1)
+		result_style.border_width_bottom = 3
+		result_style.border_color = Color(0.3, 1.0, 0.4, 1)
+		input_field.add_theme_stylebox_override("read_only", result_style)
+		input_field.add_theme_color_override("font_uneditable_color", Color(0.3, 1.0, 0.5))
 	else:
-		input_field.modulate = Color.RED
+		result_style.bg_color = Color(0.3, 0.1, 0.1, 1)
+		result_style.border_width_bottom = 3
+		result_style.border_color = Color(1.0, 0.3, 0.3, 1)
+		input_field.add_theme_stylebox_override("read_only", result_style)
+		input_field.add_theme_color_override("font_uneditable_color", Color(1.0, 0.4, 0.4))
+
 		var lbl = Label.new()
-		lbl.text = "Đáp án đúng: " + correct_ans_str
+		lbl.text = "Dap an dung: " + correct_ans_str
+		lbl.add_theme_font_size_override("font_size", 16)
 		lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-		lbl.modulate = Color.GREEN
+		lbl.add_theme_color_override("font_color", Color(0.3, 1.0, 0.5))
 		add_child(lbl)
-		
+
 	submit(is_correct, user_ans)

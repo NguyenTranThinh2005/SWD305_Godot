@@ -25,6 +25,15 @@ AuthManager="*res://scripts/autoloads/AuthManager.gd"
 GameManager="*res://scripts/autoloads/GameManager.gd"
 GrammarDB="*res://scripts/autoloads/GrammarDB.gd"
 
+[display]
+
+window/stretch/mode="canvas_items"
+window/stretch/aspect="expand"
+
 [dotnet]
 
 project/assembly_name="VNEG_Godot"
+
+[gui]
+
+theme/custom="res://assets/ui/premium_theme.tres"
