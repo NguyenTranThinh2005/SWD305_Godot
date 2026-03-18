@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "F5XOarefpXc=",
+  "dgSpecHash": "iL7LnZIO3NA=",
   "success": true,
-  "projectFilePath": "C:\\FPT Education\\Semester 7\\SWD392\\Test\\SWD305_Godot\\Backend\\SWD305\\SWD305.csproj",
+  "projectFilePath": "C:\\FPT Education\\Semester 7\\SWD392\\Project (Main)\\SWD305_Godot\\Backend\\SWD305\\SWD305.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\vohoa\\.nuget\\packages\\azure.core\\1.38.0\\azure.core.1.38.0.nupkg.sha512",
     "C:\\Users\\vohoa\\.nuget\\packages\\azure.identity\\1.11.4\\azure.identity.1.11.4.nupkg.sha512",

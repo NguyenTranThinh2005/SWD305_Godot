@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "C:\\FPT Education\\Semester 7\\SWD392\\Test\\SWD305_Godot\\Backend\\SWD305\\SWD305.csproj": {}
+    "C:\\FPT Education\\Semester 7\\SWD392\\Project (Main)\\SWD305_Godot\\Backend\\SWD305\\SWD305.csproj": {}
   },
   "projects": {
-    "C:\\FPT Education\\Semester 7\\SWD392\\Test\\SWD305_Godot\\Backend\\SWD305\\SWD305.csproj": {
+    "C:\\FPT Education\\Semester 7\\SWD392\\Project (Main)\\SWD305_Godot\\Backend\\SWD305\\SWD305.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\FPT Education\\Semester 7\\SWD392\\Test\\SWD305_Godot\\Backend\\SWD305\\SWD305.csproj",
+        "projectUniqueName": "C:\\FPT Education\\Semester 7\\SWD392\\Project (Main)\\SWD305_Godot\\Backend\\SWD305\\SWD305.csproj",
         "projectName": "SWD305",
-        "projectPath": "C:\\FPT Education\\Semester 7\\SWD392\\Test\\SWD305_Godot\\Backend\\SWD305\\SWD305.csproj",
+        "projectPath": "C:\\FPT Education\\Semester 7\\SWD392\\Project (Main)\\SWD305_Godot\\Backend\\SWD305\\SWD305.csproj",
         "packagesPath": "C:\\Users\\vohoa\\.nuget\\packages\\",
-        "outputPath": "C:\\FPT Education\\Semester 7\\SWD392\\Test\\SWD305_Godot\\Backend\\SWD305\\obj\\",
+        "outputPath": "C:\\FPT Education\\Semester 7\\SWD392\\Project (Main)\\SWD305_Godot\\Backend\\SWD305\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "C:\\Users\\vohoa\\AppData\\Roaming\\NuGet\\NuGet.Config",
