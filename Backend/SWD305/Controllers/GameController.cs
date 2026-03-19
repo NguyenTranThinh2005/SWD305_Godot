@@ -43,13 +43,26 @@ namespace SWD305.Controllers
         // GET QUESTIONS
         // =============================
         [HttpGet("{sessionId}/questions")]
-        public async Task<IActionResult> GetQuestions(int sessionId)
+        public async Task<IActionResult> GetQuestions(int sessionId, [FromQuery] string? type = null, [FromQuery] int? limit = null)
         {
             var session = await _context.GameSessions.FindAsync(sessionId);
             if (session == null) return NotFound("Session not found");
 
-            var questions = await _context.Questions
-                .Where(q => q.GameId == session.GameId && q.IsActive == true)
+            var query = _context.Questions.Where(q => q.GameId == session.GameId && q.IsActive == true);
+
+            if (!string.IsNullOrEmpty(type))
+            {
+                if (type.Equals("random", StringComparison.OrdinalIgnoreCase))
+                {
+                    query = query.OrderBy(q => Guid.NewGuid());
+                }
+                else
+                {
+                    query = query.Where(q => q.QuestionType == type);
+                }
+            }
+
+            var questions = await query
                 .Select(q => new
                 {
                     q.Id,
@@ -61,6 +74,16 @@ namespace SWD305.Controllers
                     q.Difficulty
                 })
                 .ToListAsync();
+
+            if (limit.HasValue && limit.Value > 0 && String.IsNullOrEmpty(type) == false && type.Equals("random", StringComparison.OrdinalIgnoreCase) == false)
+            {
+                // Simple client side random take if not natively randomized
+                questions = questions.OrderBy(q => Guid.NewGuid()).Take(limit.Value).ToList();
+            }
+            else if (limit.HasValue && limit.Value > 0)
+            {
+                questions = questions.Take(limit.Value).ToList();
+            }
 
             if (questions.Count == 0)
             {

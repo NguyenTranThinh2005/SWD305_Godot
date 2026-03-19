@@ -1,0 +1,166 @@
+[gd_scene load_steps=6 format=3 uid="uid://marioworld"]
+
+[ext_resource type="Script" path="res://scripts/game/MarioWorld.gd" id="1_mario"]
+[ext_resource type="Script" path="res://scripts/game/PlayerPlatformer.gd" id="2_player"]
+[ext_resource type="Theme" uid="uid://d3u6x0y8wkpjk" path="res://assets/ui/premium_theme.tres" id="3_theme"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_player"]
+size = Vector2(36, 52)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_wall"]
+size = Vector2(4000, 30)
+
+[node name="MarioWorld" type="Node2D"]
+script = ExtResource("1_mario")
+
+[node name="Camera2D" type="Camera2D" parent="."]
+position = Vector2(576, 324)
+limit_left = 0
+limit_bottom = 650
+position_smoothing_enabled = true
+
+[node name="BackgroundColor" type="ColorRect" parent="Camera2D"]
+z_index = -10
+offset_left = -600.0
+offset_top = -400.0
+offset_right = 600.0
+offset_bottom = 400.0
+color = Color(0.4, 0.6, 1, 1)
+
+[node name="LevelGeometry" type="Node2D" parent="."]
+
+[node name="Floor" type="StaticBody2D" parent="LevelGeometry"]
+position = Vector2(2000, 630)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="LevelGeometry/Floor"]
+shape = SubResource("RectangleShape2D_wall")
+
+[node name="Visual" type="ColorRect" parent="LevelGeometry/Floor"]
+offset_left = -2000.0
+offset_top = -15.0
+offset_right = 2000.0
+offset_bottom = 300.0
+color = Color(0.2, 0.6, 0.1, 1)
+
+[node name="Player" type="CharacterBody2D" parent="."]
+position = Vector2(150, 500)
+script = ExtResource("2_player")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Player"]
+shape = SubResource("RectangleShape2D_player")
+
+[node name="Body" type="ColorRect" parent="Player"]
+offset_left = -18.0
+offset_top = -26.0
+offset_right = 18.0
+offset_bottom = 26.0
+color = Color(0.8, 0.2, 0.1, 1)
+
+[node name="Eye1" type="ColorRect" parent="Player"]
+offset_left = -10.0
+offset_top = -14.0
+offset_right = -4.0
+offset_bottom = -6.0
+color = Color(1, 1, 1, 0.9)
+
+[node name="UI" type="CanvasLayer" parent="."]
+process_mode = 3
+
+[node name="Control" type="Control" parent="UI"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme = ExtResource("3_theme")
+
+[node name="HUD" type="MarginContainer" parent="UI/Control"]
+layout_mode = 1
+anchors_preset = 10
+anchor_right = 1.0
+offset_bottom = 80.0
+grow_horizontal = 2
+theme_override_constants/margin_left = 20
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 20
+
+[node name="HBox" type="HBoxContainer" parent="UI/Control/HUD"]
+layout_mode = 2
+alignment = 0
+
+[node name="ExitBtn" type="Button" parent="UI/Control/HUD/HBox"]
+custom_minimum_size = Vector2(100, 40)
+layout_mode = 2
+text = "< Thoát"
+
+[node name="TitleLbl" type="Label" parent="UI/Control/HUD/HBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 24
+text = "Map Trung Cấp"
+horizontal_alignment = 0
+
+[node name="StarsLbl" type="Label" parent="UI/Control/HUD/HBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.8, 0.1, 1)
+theme_override_font_sizes/font_size = 24
+text = "⭐ 0"
+
+[node name="ModalOverlay" type="ColorRect" parent="UI/Control"]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0, 0, 0, 0.6)
+
+[node name="CenterContainer" type="CenterContainer" parent="UI/Control/ModalOverlay"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="PanelContainer" type="PanelContainer" parent="UI/Control/ModalOverlay/CenterContainer"]
+custom_minimum_size = Vector2(800, 500)
+layout_mode = 2
+
+[node name="Margin" type="MarginContainer" parent="UI/Control/ModalOverlay/CenterContainer/PanelContainer"]
+layout_mode = 2
+theme_override_constants/margin_left = 20
+theme_override_constants/margin_top = 20
+theme_override_constants/margin_right = 20
+theme_override_constants/margin_bottom = 20
+
+[node name="VBox" type="VBoxContainer" parent="UI/Control/ModalOverlay/CenterContainer/PanelContainer/Margin"]
+layout_mode = 2
+
+[node name="HeaderLbl" type="Label" parent="UI/Control/ModalOverlay/CenterContainer/PanelContainer/Margin/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.3, 0.3, 0.3, 1)
+theme_override_font_sizes/font_size = 22
+text = "Đang tải câu hỏi..."
+
+[node name="InstructionLbl" type="Label" parent="UI/Control/ModalOverlay/CenterContainer/PanelContainer/Margin/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.8, 0.1, 1)
+theme_override_font_sizes/font_size = 18
+
+[node name="QuestionContent" type="VBoxContainer" parent="UI/Control/ModalOverlay/CenterContainer/PanelContainer/Margin/VBox"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="HBoxActions" type="HBoxContainer" parent="UI/Control/ModalOverlay/CenterContainer/PanelContainer/Margin/VBox"]
+layout_mode = 2
+alignment = 1
+
+[node name="NextBtn" type="Button" parent="UI/Control/ModalOverlay/CenterContainer/PanelContainer/Margin/VBox/HBoxActions"]
+custom_minimum_size = Vector2(250, 50)
+layout_mode = 2
+text = "Tiếp theo"

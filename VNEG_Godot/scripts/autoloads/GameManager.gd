@@ -19,6 +19,7 @@ var stars: int = 0
 var correct_count: int = 0
 var total_answered: int = 0
 var streak: int = 0
+var wrong_streak: int = 0
 var max_streak: int = 0
 var time_started: float = 0.0
 
@@ -36,6 +37,7 @@ func start_session(session_id: Variant, game_id: int, task_id: int = 0) -> void:
 	correct_count = 0
 	total_answered = 0
 	streak = 0
+	wrong_streak = 0
 	max_streak = 0
 	time_started = Time.get_ticks_msec() / 1000.0
 	combo_multiplier = 1.0
@@ -49,6 +51,7 @@ func restart_session() -> void:
 	correct_count = 0
 	total_answered = 0
 	streak = 0
+	wrong_streak = 0
 	combo_multiplier = 1.0
 	perfect_game = true
 	time_started = Time.get_ticks_msec() / 1000.0
@@ -76,6 +79,7 @@ func record_answer(question_id: int, raw_answer: Variant, is_correct: bool) -> v
 	if is_correct:
 		correct_count += 1
 		streak += 1
+		wrong_streak = 0
 		if streak > max_streak:
 			max_streak = streak
 		
@@ -90,8 +94,11 @@ func record_answer(question_id: int, raw_answer: Variant, is_correct: bool) -> v
 			stars += 1
 	else:
 		streak = 0
+		wrong_streak += 1
 		combo_multiplier = 1.0
 		hp = max(0, hp - 1)
+		if wrong_streak >= 3:
+			hp = 0 # Force game over
 		perfect_game = false
 
 	hp_changed.emit(hp)
