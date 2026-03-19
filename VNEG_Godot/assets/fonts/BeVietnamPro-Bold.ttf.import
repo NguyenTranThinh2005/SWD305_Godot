@@ -2,7 +2,7 @@
 
 importer="font_data_dynamic"
 type="FontFile"
-uid="uid://dklvf3sk4k1as"
+uid="uid://dj1wd8u6urc01"
 path="res://.godot/imported/BeVietnamPro-Bold.ttf-72bed21476fded23b0c94890b2d1a0b2.fontdata"
 
 [deps]
@@ -16,7 +16,7 @@ Rendering=null
 antialiasing=1
 generate_mipmaps=false
 disable_embedded_bitmaps=true
-multichannel_s�Ȁned_distance_field=nu
+multichannel_signed_distance_field=false
 msdf_pixel_range=8
 msdf_size=48
 allow_system_fallback=true
