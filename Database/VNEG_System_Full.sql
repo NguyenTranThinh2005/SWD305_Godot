@@ -158,7 +158,8 @@ ALTER TABLE dbo.users ADD CHECK (role IN ('admin','staff','team_owner','user','g
 ALTER TABLE dbo.users ADD CHECK (region IN ('Bac','Trung','Nam'));
 ALTER TABLE dbo.games ADD CHECK (game_type IN (
   'spelling','punctuation','image_sentence','regional_meaning','grammar','review',
-  'multiple_choice','fill_blank','find_error','drag_drop_sentence','listen_choose','picture_guess'));
+  'multiple_choice','fill_blank','find_error','drag_drop_sentence','listen_choose','picture_guess',
+  'listen_catch','rhythm_reading')); -- Cập nhật thêm loại game chữa nói ngọng (listen_catch) và nói lắp (rhythm_reading)
 ALTER TABLE dbo.reports ADD CHECK (type IN ('bug','abuse','content'));
 ALTER TABLE dbo.reports ADD CHECK (status IN ('pending','investigated','resolved'));
 ALTER TABLE dbo.task_progress ADD CHECK (status IN ('pending','in_progress','completed','failed'));
@@ -312,7 +313,10 @@ INSERT dbo.games (id,map_id,name,game_type,flow,order_index,is_premium,is_active
 (45,9,N'Tìm Lỗi Nâng Cao','find_error','{"steps":["intro","question","result"]}',3,0,1),
 (46,10,N'Xếp Câu Văn Học','drag_drop_sentence','{"steps":["intro","question","result"]}',1,1,1),
 (47,10,N'Câu Hỏi Thử Thách','multiple_choice','{"steps":["intro","question","result"]}',2,0,1),
-(48,10,N'Điền Từ Thử Thách','fill_blank','{"steps":["intro","question","result"]}',3,0,1);
+(48,10,N'Điền Từ Thử Thách','fill_blank','{"steps":["intro","question","result"]}',3,0,1),
+-- === GAME CHỮA NGỌNG & LẮP ===
+(49,1,N'Bắt Chữ Tránh Ngọng (L/N)','listen_catch','{"steps":["intro","gameplay","result"]}',7,0,1),
+(50,1,N'Đọc Nhịp Tránh Lắp','rhythm_reading','{"steps":["intro","gameplay","result"]}',8,0,1);
 SET IDENTITY_INSERT dbo.games OFF;
 GO
 
@@ -379,7 +383,23 @@ INSERT dbo.questions (id, game_id, question_type, difficulty, data, answer, imag
 (171, 40, 'multiple_choice', 3, N'{"question":"Vì trời mưa ___ đường trơn.","options":["nên","nhưng"]}', N'nên', NULL, NULL, N'Nguyên nhân', 1),
 (176, 42, 'picture_guess', 3, N'{"question":"Di tích nào đây?"}', N'chùa một cột', 'https://upload.wikimedia.org/wikipedia/commons/thumb/7/7f/Chua_Mot_Cot.jpg/320px-Chua_Mot_Cot.jpg', NULL, N'Lịch sử', 1),
 (181, 46, 'drag_drop_sentence', 3, N'["Sách","là","kho tàng","tri thức"]', N'Sách là kho tàng tri thức', NULL, NULL, N'Danh ngôn', 1),
-(186, 48, 'fill_blank', 3, N'{"question":"Ẩn ___ là so sánh ngầm.","hint":"dụ"}', N'dụ', NULL, NULL, N'Biện pháp tu từ', 1);
+(186, 48, 'fill_blank', 3, N'{"question":"Ẩn ___ là so sánh ngầm.","hint":"dụ"}', N'dụ', NULL, NULL, N'Biện pháp tu từ', 1),
+
+-- ============================================================
+-- === CHỮA NÓI NGỌNG (L/N, TR/CH) (game_type = 'listen_catch')
+-- ============================================================
+-- HƯỚNG DẪN UPDATE: Thêm cặp từ dễ nhầm lẫn vào mảng 'options' trong cột 'data'.
+-- 'audio_url' là link file âm thanh đọc chuẩn của hệ thống để học sinh nghe.
+(191, 49, 'listen_catch', 1, N'{"question":"Nghe và bắt từ đánh vần đúng","options":["lên non", "nên non"]}', N'lên non', NULL, 'res://assets/audio/len_non.mp3', N'Phân biệt L/N', 1),
+(192, 49, 'listen_catch', 1, N'{"question":"Nghe và bắt từ đánh vần đúng","options":["trời trong", "chời chong"]}', N'trời trong', NULL, 'res://assets/audio/troi_trong.mp3', N'Phân biệt TR/CH', 1),
+
+-- ============================================================
+-- === CHỮA NÓI LẮP (RHYTHM READING) (game_type = 'rhythm_reading')
+-- ============================================================
+-- HƯỚNG DẪN UPDATE: 'bpm' là tốc độ nhịp (nhịp/phút) quy định tốc độ nhảy của chữ. 
+-- Điều chỉnh BPM thấp (khoảng 60) để đọc thong thả. 
+-- 'lyrics' là mảng các từ ngữ, chúng sẽ sáng lên lần lượt theo nhịp BPM.
+(196, 50, 'rhythm_reading', 1, N'{"bpm":60,"lyrics":["Hôm","nay","trời","rất","đẹp","và","trong","xanh"]}', N'Hôm nay trời rất đẹp và trong xanh', NULL, NULL, N'Tốc độ chậm để uốn giọng', 1);
 
 SET IDENTITY_INSERT dbo.questions OFF;
 GO
@@ -393,14 +413,30 @@ INSERT dbo.question_grammar (question_id, grammar_topic_id, weight) VALUES
 -- Chính tả (Topic 4)
 (86, 4, 1), (91, 4, 1), (96, 4, 1), (101, 4, 1), (106, 4, 1), (111, 4, 1),
 -- Viết hoa & Câu (Topic 2, 9, 10)
-(161, 2, 1), (166, 10, 1), (181, 10, 1);
+(161, 2, 1), (166, 10, 1), (181, 10, 1),
+-- Ngọng & Lắp (Topic 3: Ghép vần, Topic 1: Dấu câu (nhịp))
+(191, 3, 1), (192, 3, 1), (196, 1, 1);
 GO
+
+UPDATE dbo.questions 
+SET audio_url = 'https://actions.google.com/sounds/v1/alarms/beep_short.ogg' 
+WHERE game_id = 49;
+
+UPDATE dbo.questions 
+SET audio_url = 'res://assets/audio/len_non.mp3' 
+WHERE id = 191;
+
+UPDATE dbo.questions 
+SET audio_url = 'res://assets/audio/troi_trong.mp3' 
+WHERE id = 192;
+
+
 -- KIỂM TRA
 SELECT N'Maps' AS [Bảng], COUNT(*) AS [Số lượng] FROM dbo.maps
 UNION ALL SELECT N'Games', COUNT(*) FROM dbo.games
 UNION ALL SELECT N'Questions', COUNT(*) FROM dbo.questions;
 GO
 PRINT N'VNEG_System - HOAN TAT!';
-PRINT N'10 Maps - 48 Games - 100+ Cau hoi';
-PRINT N'6 che do: multiple_choice, fill_blank, find_error, drag_drop_sentence, listen_choose, picture_guess';
+PRINT N'10 Maps - 50 Games - 100+ Cau hoi';
+PRINT N'8 che do: multiple_choice, fill_blank, find_error, drag_drop_sentence, listen_choose, picture_guess, listen_catch (Ngọng), rhythm_reading (Lắp)';
 GO

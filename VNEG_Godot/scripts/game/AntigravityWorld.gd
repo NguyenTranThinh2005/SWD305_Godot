@@ -168,6 +168,10 @@ func _show_question(index: int) -> void:
 			q_node = preload("res://scripts/ui/QuestionFillBlank.gd").new()
 		"listen_choose":
 			q_node = preload("res://scripts/ui/QuestionListenChoose.gd").new()
+		"listen_catch":
+			q_node = preload("res://scripts/ui/QuestionListenCatch.gd").new()
+		"rhythm_reading":
+			q_node = preload("res://scripts/ui/QuestionRhythmReading.gd").new()
 		"find_error":
 			q_node = preload("res://scripts/ui/QuestionFindError.gd").new()
 		"picture_guess":

@@ -1,5 +1,6 @@
 extends QuestionBase
-## QuestionListenChoose.gd — Nghe va chon dap an
+## QuestionListenCatch.gd — Chữa nói ngọng (L/N, TR/CH)
+## Biến thể của QuestionListenChoose nhưng nút bấm to hơn, rõ ràng hơn để người chơi phân biệt cặp từ.
 
 var audio_player: AudioStreamPlayer
 var play_btn: Button
@@ -7,18 +8,32 @@ var is_audio_ready: bool = false
 
 func _do_setup() -> void:
 	alignment = BoxContainer.ALIGNMENT_CENTER
-	add_theme_constant_override("separation", 12)
+	add_theme_constant_override("separation", 24)
 	size_flags_horizontal = Control.SIZE_EXPAND_FILL
+
+	var title = Label.new()
+	title.text = "Lắng nghe và chọn âm đúng để không bị ngọng nhé!"
+	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	title.add_theme_font_size_override("font_size", 22)
+	title.add_theme_color_override("font_color", Color(0.9, 0.8, 0.2))
+	add_child(title)
 
 	audio_player = AudioStreamPlayer.new()
 	add_child(audio_player)
 
-	# Support image for Listening questions
-	_add_image_display_by_data(question_data)
-
 	play_btn = Button.new()
-	play_btn.add_theme_font_size_override("font_size", 20)
-	play_btn.custom_minimum_size = Vector2(0, 55)
+	play_btn.text = "Đang tải âm thanh bài tập..."
+	play_btn.add_theme_font_size_override("font_size", 28)
+	play_btn.custom_minimum_size = Vector2(0, 80)
+	
+	var play_style = StyleBoxFlat.new()
+	play_style.bg_color = Color(0.8, 0.4, 0.2, 1)
+	play_style.corner_radius_top_left = 15
+	play_style.corner_radius_top_right = 15
+	play_style.corner_radius_bottom_right = 15
+	play_style.corner_radius_bottom_left = 15
+	play_btn.add_theme_stylebox_override("normal", play_style)
+	
 	add_child(play_btn)
 
 	play_btn.pressed.connect(func():
@@ -26,25 +41,21 @@ func _do_setup() -> void:
 			audio_player.play()
 	)
 
-	# Load Audio from URL
 	var audio_url = str(question_data.get("audioUrl", question_data.get("audio_url", question_data.get("AudioUrl", ""))))
-
 	if audio_url != "" and audio_url.begins_with("http"):
 		_load_audio_from_url(audio_url)
-		play_btn.text = "Dang tai am thanh..."
-		play_btn.disabled = true
 	elif audio_url != "" and audio_url.begins_with("res://"):
 		var stream = load(audio_url)
 		if stream is AudioStream:
 			audio_player.stream = stream
 			is_audio_ready = true
-			play_btn.text = "Nghe lai"
+			play_btn.text = "▶ NGHE ÂM THANH"
 			play_btn.disabled = false
 		else:
-			play_btn.text = "Loi file am thanh goc (res://)"
+			play_btn.text = "Lỗi âm thanh gốc (res://)"
 			play_btn.disabled = true
 	else:
-		play_btn.text = "Khong co am thanh (chon dap an)"
+		play_btn.text = "Không có âm thanh (chọn đáp án)"
 		play_btn.disabled = true
 
 	# Parse options from data
@@ -69,39 +80,32 @@ func _do_setup() -> void:
 		if typeof(opts) == TYPE_ARRAY:
 			options = opts
 
-	if options.size() == 0 and typeof(raw_data) == TYPE_STRING:
-		options = raw_data.split(",")
-
 	var correct_ans = str(question_data.get("answer", question_data.get("Answer", "")))
 
-	var options_box = VBoxContainer.new()
-	options_box.add_theme_constant_override("separation", 8)
+	var options_box = HBoxContainer.new()
+	options_box.alignment = BoxContainer.ALIGNMENT_CENTER
+	options_box.add_theme_constant_override("separation", 40)
 	options_box.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	add_child(options_box)
 
-	var labels = ["A", "B", "C", "D", "E"]
+	# Shuffle options to avoid pattern guessing
+	options.shuffle()
+
 	for i in range(options.size()):
 		var btn = Button.new()
 		var opt_text = str(options[i]).strip_edges()
-		var prefix = labels[i] if i < labels.size() else str(i + 1)
-		btn.text = prefix + ".  " + opt_text
-		btn.add_theme_font_size_override("font_size", 20)
-		btn.custom_minimum_size = Vector2(0, 50)
-		btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		btn.alignment = HORIZONTAL_ALIGNMENT_LEFT
-
+		btn.text = opt_text
+		btn.add_theme_font_size_override("font_size", 32)
+		btn.custom_minimum_size = Vector2(250, 100)
+		
 		var style = StyleBoxFlat.new()
-		style.bg_color = Color(0.15, 0.16, 0.25, 1)
-		style.border_width_left = 3
-		style.border_color = Color(0.35, 0.35, 0.5, 1)
-		style.corner_radius_top_left = 10
-		style.corner_radius_top_right = 10
-		style.corner_radius_bottom_right = 10
-		style.corner_radius_bottom_left = 10
-		style.content_margin_left = 16
-		style.content_margin_right = 16
-		style.content_margin_top = 8
-		style.content_margin_bottom = 8
+		style.bg_color = Color(0.15, 0.4, 0.6, 1)
+		style.border_width_bottom = 6
+		style.border_color = Color(0.1, 0.25, 0.4, 1)
+		style.corner_radius_top_left = 20
+		style.corner_radius_top_right = 20
+		style.corner_radius_bottom_right = 20
+		style.corner_radius_bottom_left = 20
 		btn.add_theme_stylebox_override("normal", style)
 
 		options_box.add_child(btn)
@@ -114,7 +118,6 @@ func _load_audio_from_url(url: String) -> void:
 	add_child(http)
 	http.request_completed.connect(_on_audio_downloaded)
 	http.request(url, ["User-Agent: Mozilla/5.0"])
-	play_btn.text = "Dang tai..."
 
 func _on_audio_downloaded(_result, response_code, headers, body) -> void:
 	if response_code == 200 and body.size() > 0:
@@ -137,7 +140,7 @@ func _on_audio_downloaded(_result, response_code, headers, body) -> void:
 		if stream:
 			audio_player.stream = stream
 			is_audio_ready = true
-			play_btn.text = "Nghe lai"
+			play_btn.text = "▶ NGHE ÂM THANH"
 			play_btn.disabled = false
 		else:
 			play_btn.text = "⚠️ Định dạng lỗi (Giả lập Nghe)"
@@ -146,7 +149,7 @@ func _on_audio_downloaded(_result, response_code, headers, body) -> void:
 		play_btn.text = "🔊 Audio Mẫu (Link giả định)"
 		play_btn.disabled = false
 
-func _on_option_selected(btn: Button, selected: String, correct: String, options_box: VBoxContainer) -> void:
+func _on_option_selected(btn: Button, selected: String, correct: String, options_box: HBoxContainer) -> void:
 	for child in options_box.get_children():
 		child.disabled = true
 
@@ -157,43 +160,27 @@ func _on_option_selected(btn: Button, selected: String, correct: String, options
 	else:
 		_style_wrong(btn)
 		for child in options_box.get_children():
-			var t = child.text
-			var dot_pos = t.find(".")
-			if dot_pos > 0:
-				var content = t.substr(dot_pos + 1).strip_edges()
-				if content.to_lower() == correct.to_lower():
-					_style_correct(child)
+			if child.text.to_lower() == correct.to_lower():
+				_style_correct(child)
 
 	submit(is_correct, selected)
 
 func _style_correct(btn: Button) -> void:
 	var style = StyleBoxFlat.new()
-	style.bg_color = Color(0.1, 0.35, 0.15, 1)
-	style.border_width_left = 3
-	style.border_color = Color(0.3, 1.0, 0.4, 1)
-	style.corner_radius_top_left = 10
-	style.corner_radius_top_right = 10
-	style.corner_radius_bottom_right = 10
-	style.corner_radius_bottom_left = 10
-	style.content_margin_left = 16
-	style.content_margin_right = 16
-	style.content_margin_top = 8
-	style.content_margin_bottom = 8
+	style.bg_color = Color(0.2, 0.7, 0.3, 1)
+	style.corner_radius_top_left = 20
+	style.corner_radius_top_right = 20
+	style.corner_radius_bottom_right = 20
+	style.corner_radius_bottom_left = 20
 	btn.add_theme_stylebox_override("disabled", style)
-	btn.add_theme_color_override("font_disabled_color", Color(0.3, 1.0, 0.5))
+	btn.add_theme_color_override("font_disabled_color", Color(1, 1, 1))
 
 func _style_wrong(btn: Button) -> void:
 	var style = StyleBoxFlat.new()
-	style.bg_color = Color(0.35, 0.1, 0.1, 1)
-	style.border_width_left = 3
-	style.border_color = Color(1.0, 0.3, 0.3, 1)
-	style.corner_radius_top_left = 10
-	style.corner_radius_top_right = 10
-	style.corner_radius_bottom_right = 10
-	style.corner_radius_bottom_left = 10
-	style.content_margin_left = 16
-	style.content_margin_right = 16
-	style.content_margin_top = 8
-	style.content_margin_bottom = 8
+	style.bg_color = Color(0.8, 0.2, 0.2, 1)
+	style.corner_radius_top_left = 20
+	style.corner_radius_top_right = 20
+	style.corner_radius_bottom_right = 20
+	style.corner_radius_bottom_left = 20
 	btn.add_theme_stylebox_override("disabled", style)
-	btn.add_theme_color_override("font_disabled_color", Color(1.0, 0.4, 0.4))
+	btn.add_theme_color_override("font_disabled_color", Color(1, 1, 1))
