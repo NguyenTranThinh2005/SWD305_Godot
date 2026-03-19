@@ -30,31 +30,12 @@ func _do_setup() -> void:
 	if q_text == "":
 		q_text = "Doán từ từ bức tranh"
 
-	# Image container with loading placeholder
-	var img_panel = PanelContainer.new()
-	img_panel.custom_minimum_size = Vector2(0, 140)
-	img_panel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	var img_style = StyleBoxFlat.new()
-	img_style.bg_color = Color(0.1, 0.1, 0.15, 1)
-	img_style.corner_radius_top_left = 12
-	img_style.corner_radius_top_right = 12
-	img_style.corner_radius_bottom_right = 12
-	img_style.corner_radius_bottom_left = 12
-	img_panel.add_theme_stylebox_override("panel", img_style)
-
-	image_rect = TextureRect.new()
-	image_rect.custom_minimum_size = Vector2(200, 140)
-	image_rect.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-	image_rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-	image_rect.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	img_panel.add_child(image_rect)
-	add_child(img_panel)
-
 	# Question text
 	if q_text != "" and q_text != raw_data:
 		var q_lbl = Label.new()
 		q_lbl.text = q_text
-		q_lbl.add_theme_font_size_override("font_size", 18)
+		q_lbl.add_theme_font_size_override("font_size", 20)
+		q_lbl.add_theme_color_override("font_color", Color("#4b4b4b"))
 		q_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		q_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 		add_child(q_lbl)
@@ -63,6 +44,7 @@ func _do_setup() -> void:
 	input_field = LineEdit.new()
 	input_field.placeholder_text = "Nhap cau tra loi..."
 	input_field.add_theme_font_size_override("font_size", 20)
+	input_field.add_theme_color_override("font_color", Color.WHITE)
 	input_field.custom_minimum_size = Vector2(0, 45)
 	input_field.alignment = HORIZONTAL_ALIGNMENT_CENTER
 	input_field.caret_blink = true
@@ -82,8 +64,8 @@ func _do_setup() -> void:
 
 	var submit_btn = Button.new()
 	submit_btn.text = "Xac nhan"
-	submit_btn.add_theme_font_size_override("font_size", 20)
 	submit_btn.custom_minimum_size = Vector2(200, 45)
+	apply_3d_style(submit_btn, Color("#1cb0f6"))
 	add_child(submit_btn)
 
 	submit_btn.pressed.connect(_on_submit_pressed)

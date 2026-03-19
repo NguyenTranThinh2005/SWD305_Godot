@@ -57,8 +57,8 @@ func _do_setup() -> void:
 
 	submit_btn = Button.new()
 	submit_btn.text = "Xac nhan"
-	submit_btn.add_theme_font_size_override("font_size", 20)
 	submit_btn.custom_minimum_size = Vector2(200, 48)
+	apply_3d_style(submit_btn, Color("#1cb0f6"))
 	add_child(submit_btn)
 	submit_btn.pressed.connect(_on_submit_pressed)
 
@@ -104,41 +104,15 @@ func _setup_words() -> void:
 func _create_word_btn(text: String, accent_color: Color) -> Button:
 	var btn = Button.new()
 	btn.text = text
-	btn.add_theme_font_size_override("font_size", 20)
-	btn.custom_minimum_size = Vector2(0, 38)
-	var style = StyleBoxFlat.new()
-	style.bg_color = Color(0.18, 0.18, 0.28, 1)
-	style.border_width_bottom = 2
-	style.border_color = accent_color
-	style.corner_radius_top_left = 8
-	style.corner_radius_top_right = 8
-	style.corner_radius_bottom_right = 8
-	style.corner_radius_bottom_left = 8
-	style.content_margin_left = 12
-	style.content_margin_right = 12
-	style.content_margin_top = 4
-	style.content_margin_bottom = 4
-	btn.add_theme_stylebox_override("normal", style)
+	apply_3d_style(btn, accent_color)
 	return btn
 
 func _move_word_to_target(btn: Button, w_text: String) -> void:
 	if btn.get_parent() == word_bank:
 		word_bank.remove_child(btn)
 		target_zone.add_child(btn)
-		# Restyle for target zone (green accent)
-		var style = StyleBoxFlat.new()
-		style.bg_color = Color(0.15, 0.2, 0.3, 1)
-		style.border_width_bottom = 2
-		style.border_color = Color(0.3, 0.8, 0.5, 1)
-		style.corner_radius_top_left = 8
-		style.corner_radius_top_right = 8
-		style.corner_radius_bottom_right = 8
-		style.corner_radius_bottom_left = 8
-		style.content_margin_left = 12
-		style.content_margin_right = 12
-		style.content_margin_top = 4
-		style.content_margin_bottom = 4
-		btn.add_theme_stylebox_override("normal", style)
+		# Restyle for target zone (green)
+		apply_3d_style(btn, Color("#58cc02"))
 
 		for c in btn.pressed.get_connections():
 			btn.pressed.disconnect(c["callable"])
@@ -149,19 +123,7 @@ func _move_word_back(btn: Button, w_text: String) -> void:
 		target_zone.remove_child(btn)
 		word_bank.add_child(btn)
 		# Restore bank style
-		var style = StyleBoxFlat.new()
-		style.bg_color = Color(0.18, 0.18, 0.28, 1)
-		style.border_width_bottom = 2
-		style.border_color = Color(0.42, 0.39, 1.0, 1)
-		style.corner_radius_top_left = 8
-		style.corner_radius_top_right = 8
-		style.corner_radius_bottom_right = 8
-		style.corner_radius_bottom_left = 8
-		style.content_margin_left = 12
-		style.content_margin_right = 12
-		style.content_margin_top = 4
-		style.content_margin_bottom = 4
-		btn.add_theme_stylebox_override("normal", style)
+		apply_3d_style(btn, Color(0.42, 0.39, 1.0, 1))
 
 		for c in btn.pressed.get_connections():
 			btn.pressed.disconnect(c["callable"])

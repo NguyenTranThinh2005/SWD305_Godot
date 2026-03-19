@@ -62,6 +62,22 @@ namespace SWD305.Controllers
                 })
                 .ToListAsync();
 
+            if (questions.Count == 0)
+            {
+                var game = await _context.Games.FindAsync(session.GameId);
+                string gType = game?.GameType ?? "multiple_choice";
+                
+                questions.Add(new {
+                    Id = -1,
+                    Data = "{\"question\":\"[MẪU] Màn chơi này đang được thêm dữ liệu. Chọn ô đầu tiên để qua màn!\",\"options\":[\"Tuyệt vời\",\"Chờ bản update\"]}",
+                    Answer = "Tuyệt vời",
+                    ImageUrl = (string)null,
+                    AudioUrl = (string)null,
+                    QuestionType = gType,
+                    Difficulty = (int?)1
+                });
+            }
+
             return Ok(questions);
         }
 
@@ -101,6 +117,14 @@ namespace SWD305.Controllers
 
             foreach (var item in request.Answers)
             {
+                if (item.QuestionId < 0)
+                {
+                    // Fallback question automatically correct
+                    correctCount++;
+                    correctQuestionIds.Add(item.QuestionId);
+                    continue;
+                }
+
                 if (!questionInfoById.TryGetValue(item.QuestionId, out var qInfo)) continue;
 
                 bool isCorrectChoice = false;

@@ -66,6 +66,7 @@ func _do_setup() -> void:
 	start_btn.add_theme_font_size_override("font_size", 24)
 	start_btn.custom_minimum_size = Vector2(250, 60)
 	start_btn.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+	apply_3d_style(start_btn, Color("#ff9600"))
 	add_child(start_btn)
 	start_btn.pressed.connect(_on_start_pressed)
 
@@ -74,14 +75,7 @@ func _do_setup() -> void:
 	beat_btn.add_theme_font_size_override("font_size", 24)
 	beat_btn.custom_minimum_size = Vector2(300, 80)
 	beat_btn.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
-	
-	var style = StyleBoxFlat.new()
-	style.bg_color = Color(0.2, 0.6, 0.8, 1)
-	style.corner_radius_top_left = 15
-	style.corner_radius_top_right = 15
-	style.corner_radius_bottom_right = 15
-	style.corner_radius_bottom_left = 15
-	beat_btn.add_theme_stylebox_override("normal", style)
+	apply_3d_style(beat_btn, Color("#58cc02"))
 	
 	add_child(beat_btn)
 	beat_btn.pressed.connect(_on_beat_pressed)

@@ -22,7 +22,9 @@ func _add_image_display_by_data(data: Dictionary) -> TextureRect:
 	return _add_image_display(url)
 
 func _add_image_display(url: String) -> TextureRect:
-	if url == "" or not url.begins_with("http"):
+	if url == "":
+		return null
+	if not url.begins_with("http") and not url.begins_with("res://"):
 		return null
 		
 	var img_panel = PanelContainer.new()
@@ -30,11 +32,13 @@ func _add_image_display(url: String) -> TextureRect:
 	img_panel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	
 	var style = StyleBoxFlat.new()
-	style.bg_color = Color(0.1, 0.1, 0.15, 0.5)
-	style.corner_radius_top_left = 12
-	style.corner_radius_top_right = 12
-	style.corner_radius_bottom_right = 12
-	style.corner_radius_bottom_left = 12
+	style.bg_color = Color(0.95, 0.95, 0.95, 1.0)
+	style.border_width_bottom = 4
+	style.border_color = Color(0.85, 0.85, 0.85, 1.0)
+	style.corner_radius_top_left = 16
+	style.corner_radius_top_right = 16
+	style.corner_radius_bottom_right = 16
+	style.corner_radius_bottom_left = 16
 	img_panel.add_theme_stylebox_override("panel", style)
 	
 	var rect = TextureRect.new()
@@ -47,6 +51,22 @@ func _add_image_display(url: String) -> TextureRect:
 	add_child(img_panel)
 	move_child(img_panel, 0) 
 	
+	if url.begins_with("res://"):
+		var bytes = FileAccess.get_file_as_bytes(url)
+		var raw_img = Image.new()
+		var err = raw_img.load_webp_from_buffer(bytes)
+		if err != OK:
+			err = raw_img.load_png_from_buffer(bytes)
+		if err != OK:
+			err = raw_img.load_jpg_from_buffer(bytes)
+			
+		if err == OK:
+			rect.texture = ImageTexture.create_from_image(raw_img)
+		else:
+			var res = load(url)
+			if res is Texture2D: rect.texture = res
+		return rect
+		
 	# Async Load
 	var loader = HTTPRequest.new()
 	add_child(loader)
@@ -60,5 +80,43 @@ func _add_image_display(url: String) -> TextureRect:
 				rect.texture = ImageTexture.create_from_image(image)
 		loader.queue_free()
 	)
-	loader.request(url)
+	loader.request(url, ["User-Agent: Mozilla/5.0"])
 	return rect
+
+func apply_3d_style(btn: Button, base_color: Color = Color("#1cb0f6")) -> void:
+	btn.add_theme_font_size_override("font_size", 22)
+	btn.add_theme_color_override("font_color", Color.WHITE)
+	btn.add_theme_color_override("font_hover_color", Color.WHITE)
+	btn.add_theme_color_override("font_pressed_color", Color.WHITE)
+	btn.add_theme_color_override("font_disabled_color", Color.WHITE)
+	
+	var style = StyleBoxFlat.new()
+	style.bg_color = base_color
+	style.border_width_bottom = 6
+	style.border_color = base_color.darkened(0.2)
+	style.corner_radius_top_left = 16
+	style.corner_radius_top_right = 16
+	style.corner_radius_bottom_right = 16
+	style.corner_radius_bottom_left = 16
+	
+	btn.add_theme_stylebox_override("normal", style)
+	
+	var hover_style = style.duplicate()
+	hover_style.bg_color = base_color.lightened(0.1)
+	btn.add_theme_stylebox_override("hover", hover_style)
+	
+	var pressed_style = style.duplicate()
+	pressed_style.border_width_bottom = 0
+	pressed_style.content_margin_top = 6
+	btn.add_theme_stylebox_override("pressed", pressed_style)
+	
+	var disabled_style = style.duplicate()
+	disabled_style.bg_color = base_color.lightened(0.2)
+	disabled_style.border_width_bottom = 4
+	btn.add_theme_stylebox_override("disabled", disabled_style)
+
+func apply_3d_correct(btn: Button) -> void:
+	apply_3d_style(btn, Color("#58cc02")) # Green
+	
+func apply_3d_wrong(btn: Button) -> void:
+	apply_3d_style(btn, Color("#ff4b4b")) # Red

@@ -440,3 +440,14 @@ PRINT N'VNEG_System - HOAN TAT!';
 PRINT N'10 Maps - 50 Games - 100+ Cau hoi';
 PRINT N'8 che do: multiple_choice, fill_blank, find_error, drag_drop_sentence, listen_choose, picture_guess, listen_catch (Ngọng), rhythm_reading (Lắp)';
 GO
+-- ====================================================================
+-- HOTFIX: Local AI Pictures for Picture Guess
+-- ====================================================================
+UPDATE dbo.questions SET image_url = 'res://assets/images/img_24.png' WHERE id = 24;
+UPDATE dbo.questions SET image_url = 'res://assets/images/img_25.png' WHERE id = 25;
+UPDATE dbo.questions SET image_url = 'res://assets/images/img_51.png' WHERE id = 51;
+UPDATE dbo.questions SET image_url = 'res://assets/images/img_81.png' WHERE id = 81;
+UPDATE dbo.questions SET image_url = 'res://assets/images/img_111.png' WHERE id = 111;
+UPDATE dbo.questions SET image_url = 'res://assets/images/img_112.png' WHERE id = 112;
+UPDATE dbo.questions SET image_url = 'res://assets/images/img_141.png' WHERE id = 141;
+UPDATE dbo.questions SET image_url = 'res://assets/images/img_176.png' WHERE id = 176;

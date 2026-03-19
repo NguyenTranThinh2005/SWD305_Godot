@@ -1,12 +1,37 @@
 {
   "Version": 1,
   "WorkspaceRootPath": "C:\\FPT Education\\Semester 7\\SWD392\\Project (Main)\\SWD305_Godot\\Backend\\",
-  "Documents": [],
+  "Documents": [
+    {
+      "AbsoluteMoniker": "D:0:0:{3174CC36-28E7-44C5-8C5A-32594D8E66C5}|SWD305\\SWD305.csproj|c:\\fpt education\\semester 7\\swd392\\project (main)\\swd305_godot\\backend\\swd305\\controllers\\gamecontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{3174CC36-28E7-44C5-8C5A-32594D8E66C5}|SWD305\\SWD305.csproj|solutionrelative:swd305\\controllers\\gamecontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    }
+  ],
   "DocumentGroupContainers": [
     {
       "Orientation": 0,
       "VerticalTabListWidth": 256,
-      "DocumentGroups": []
+      "DocumentGroups": [
+        {
+          "DockedWidth": 200,
+          "SelectedChildIndex": 0,
+          "Children": [
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "GameController.cs",
+              "DocumentMoniker": "C:\\FPT Education\\Semester 7\\SWD392\\Project (Main)\\SWD305_Godot\\Backend\\SWD305\\Controllers\\GameController.cs",
+              "RelativeDocumentMoniker": "SWD305\\Controllers\\GameController.cs",
+              "ToolTip": "C:\\FPT Education\\Semester 7\\SWD392\\Project (Main)\\SWD305_Godot\\Backend\\SWD305\\Controllers\\GameController.cs",
+              "RelativeToolTip": "SWD305\\Controllers\\GameController.cs",
+              "ViewState": "AgIAADsAAAAAAAAAAAAYwEUAAAAeAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-03-19T14:40:52.795Z",
+              "EditorCaption": ""
+            }
+          ]
+        }
+      ]
     }
   ]
 }

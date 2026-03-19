@@ -58,25 +58,7 @@ func _do_setup() -> void:
 		btn.add_theme_font_size_override("font_size", 24)
 		btn.custom_minimum_size = Vector2(0, 48)
 
-		# Word chip style
-		var style = StyleBoxFlat.new()
-		style.bg_color = Color(0.18, 0.18, 0.28, 1)
-		style.border_width_bottom = 2
-		style.border_color = Color(0.4, 0.4, 0.55, 1)
-		style.corner_radius_top_left = 8
-		style.corner_radius_top_right = 8
-		style.corner_radius_bottom_right = 8
-		style.corner_radius_bottom_left = 8
-		style.content_margin_left = 14
-		style.content_margin_right = 14
-		style.content_margin_top = 6
-		style.content_margin_bottom = 6
-		btn.add_theme_stylebox_override("normal", style)
-
-		var hover = style.duplicate()
-		hover.border_color = Color(1.0, 0.5, 0.3, 1)
-		hover.bg_color = Color(0.25, 0.2, 0.3, 1)
-		btn.add_theme_stylebox_override("hover", hover)
+		apply_3d_style(btn)
 
 		flow_container.add_child(btn)
 		btn.pressed.connect(func():
@@ -105,33 +87,7 @@ func _on_word_selected(btn: Button, selected_word: String, correct_word: String,
 	submit(is_correct, selected_word)
 
 func _style_word_correct(btn: Button) -> void:
-	var style = StyleBoxFlat.new()
-	style.bg_color = Color(0.1, 0.35, 0.15, 1)
-	style.border_width_bottom = 3
-	style.border_color = Color(0.3, 1.0, 0.4, 1)
-	style.corner_radius_top_left = 8
-	style.corner_radius_top_right = 8
-	style.corner_radius_bottom_right = 8
-	style.corner_radius_bottom_left = 8
-	style.content_margin_left = 14
-	style.content_margin_right = 14
-	style.content_margin_top = 6
-	style.content_margin_bottom = 6
-	btn.add_theme_stylebox_override("disabled", style)
-	btn.add_theme_color_override("font_disabled_color", Color(0.3, 1.0, 0.5))
+	apply_3d_correct(btn)
 
 func _style_word_wrong(btn: Button) -> void:
-	var style = StyleBoxFlat.new()
-	style.bg_color = Color(0.35, 0.1, 0.1, 1)
-	style.border_width_bottom = 3
-	style.border_color = Color(1.0, 0.3, 0.3, 1)
-	style.corner_radius_top_left = 8
-	style.corner_radius_top_right = 8
-	style.corner_radius_bottom_right = 8
-	style.corner_radius_bottom_left = 8
-	style.content_margin_left = 14
-	style.content_margin_right = 14
-	style.content_margin_top = 6
-	style.content_margin_bottom = 6
-	btn.add_theme_stylebox_override("disabled", style)
-	btn.add_theme_color_override("font_disabled_color", Color(1.0, 0.4, 0.4))
+	apply_3d_wrong(btn)

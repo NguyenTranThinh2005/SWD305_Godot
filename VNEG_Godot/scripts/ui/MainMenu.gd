@@ -16,39 +16,55 @@ var selected_map_id: int = 0
 var selected_game_id: int = 0
 
 func _ready():
-	play_button.pressed.connect(_on_play_pressed)
-	if btn_teams: btn_teams.pressed.connect(func(): get_tree().change_scene_to_file("res://scenes/TeamsMenu.tscn"))
-	if btn_profile: btn_profile.pressed.connect(func(): get_tree().change_scene_to_file("res://scenes/ProfileMenu.tscn"))
+	var bg = ColorRect.new()
+	bg.color = Color("#f0f4f8")
+	bg.set_anchors_preset(PRESET_FULL_RECT)
+	add_child(bg)
+	move_child(bg, 0)
 	
-	# Add Logout button programmatically
+	welcome_label.add_theme_color_override("font_color", Color("#4b4b4b"))
+	welcome_label.add_theme_font_size_override("font_size", 28)
+	if score_label: score_label.add_theme_color_override("font_color", Color("#ff9600"))
+
+	play_button.pressed.connect(_on_play_pressed)
+	if btn_teams: 
+		btn_teams.pressed.connect(func(): get_tree().change_scene_to_file("res://scenes/TeamsMenu.tscn"))
+		_apply_3d_style(btn_teams, Color("#1cb0f6"))
+	if btn_profile: 
+		btn_profile.pressed.connect(func(): get_tree().change_scene_to_file("res://scenes/ProfileMenu.tscn"))
+		_apply_3d_style(btn_profile, Color("#ce82ff"))
+	
+	_apply_3d_style(play_button, Color("#58cc02"))
+	
 	var btn_logout = Button.new()
 	btn_logout.text = "Đăng xuất"
 	btn_logout.pressed.connect(_on_logout_pressed)
+	_apply_3d_style(btn_logout, Color("#ff4b4b"))
 	$VBoxContainer/DashboardNav.add_child(btn_logout)
 	
-	# Role-gated navigation buttons
 	var user_role = AuthManager.get_user_role()
 	if user_role == "admin":
 		var btn_admin = Button.new()
 		btn_admin.text = "⚙️ Admin Panel"
 		btn_admin.pressed.connect(func(): get_tree().change_scene_to_file("res://scenes/AdminDashboard.tscn"))
+		_apply_3d_style(btn_admin, Color("#4b4b4b"))
 		$VBoxContainer/DashboardNav.add_child(btn_admin)
 	
 	if user_role == "admin" or user_role == "staff":
 		var btn_staff = Button.new()
 		btn_staff.text = "👥 Staff Panel"
 		btn_staff.pressed.connect(func(): get_tree().change_scene_to_file("res://scenes/StaffPanel.tscn"))
+		_apply_3d_style(btn_staff, Color("#ff9600"))
 		$VBoxContainer/DashboardNav.add_child(btn_staff)
 	
 	if AuthManager.is_logged_in():
-		welcome_label.text = "Xin chào, " + AuthManager.current_user.get("email", "Học sinh").split("@")[0] + "!"
+		var email = AuthManager.current_user.get("email", "Học sinh").split("@")[0]
+		welcome_label.text = "Xin chào, " + email + "!"
 		_load_user_stats()
 	else:
-		# Lỗi auth, văng về login
 		get_tree().change_scene_to_file("res://scenes/LoginScreen.tscn")
 		return
 		
-	# Load danh sách các Map học tập
 	_load_maps()
 
 func _load_user_stats() -> void:
@@ -74,6 +90,7 @@ func _load_maps() -> void:
 			btn.text = "🌍 " + str(m_data.get("name", "Map"))
 			var m_id = int(m_data.get("id", 0))
 			btn.pressed.connect(func(): _on_map_selected(m_id, m_data.get("name", "Map")))
+			_apply_3d_style(btn, Color("#2b7489"))
 			map_container.add_child(btn)
 	else:
 		var err = Label.new()
@@ -112,6 +129,7 @@ func _on_map_selected(map_id: int, map_name: String) -> void:
 			btn.text = "🎮 " + str(g_data.get("name", "Game"))
 			var g_id = int(g_data.get("id", 0))
 			btn.pressed.connect(func(): _on_game_selected(g_id, g_data.get("name", "Game")))
+			_apply_3d_style(btn, Color("#1cb0f6"))
 			games_container.add_child(btn)
 			games_container.move_child(btn, games_container.get_child_count() - 2)
 	else:
@@ -190,3 +208,31 @@ func _on_logout_pressed() -> void:
 		await API.logout() # Wait for session cleanup
 		
 	get_tree().change_scene_to_file("res://scenes/LoginScreen.tscn")
+
+func _apply_3d_style(btn: Button, base_color: Color) -> void:
+	btn.custom_minimum_size = Vector2(0, 60)
+	btn.add_theme_font_size_override("font_size", 20)
+	btn.add_theme_color_override("font_color", Color.WHITE)
+	btn.add_theme_color_override("font_hover_color", Color.WHITE)
+	btn.add_theme_color_override("font_pressed_color", Color.WHITE)
+	btn.add_theme_color_override("font_focus_color", Color.WHITE)
+	
+	var style = StyleBoxFlat.new()
+	style.bg_color = base_color
+	style.border_width_bottom = 6
+	style.border_color = base_color.darkened(0.2)
+	style.corner_radius_top_left = 16
+	style.corner_radius_top_right = 16
+	style.corner_radius_bottom_right = 16
+	style.corner_radius_bottom_left = 16
+	
+	btn.add_theme_stylebox_override("normal", style)
+	
+	var hover_style = style.duplicate()
+	hover_style.bg_color = base_color.lightened(0.1)
+	btn.add_theme_stylebox_override("hover", hover_style)
+	
+	var pressed_style = style.duplicate()
+	pressed_style.border_width_bottom = 0
+	pressed_style.content_margin_top = 6
+	btn.add_theme_stylebox_override("pressed", pressed_style)

@@ -33,6 +33,7 @@ func _do_setup() -> void:
 	var sentence_lbl = Label.new()
 	sentence_lbl.text = sentence_text
 	sentence_lbl.add_theme_font_size_override("font_size", 22)
+	sentence_lbl.add_theme_color_override("font_color", Color("#4b4b4b"))
 	sentence_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	sentence_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	add_child(sentence_lbl)
@@ -50,6 +51,7 @@ func _do_setup() -> void:
 	input_field = LineEdit.new()
 	input_field.placeholder_text = "Nhap cau tra loi..."
 	input_field.add_theme_font_size_override("font_size", 22)
+	input_field.add_theme_color_override("font_color", Color.WHITE)
 	input_field.custom_minimum_size = Vector2(0, 50)
 	input_field.alignment = HORIZONTAL_ALIGNMENT_CENTER
 	input_field.caret_blink = true
@@ -69,8 +71,8 @@ func _do_setup() -> void:
 
 	var submit_btn = Button.new()
 	submit_btn.text = "Xac nhan"
-	submit_btn.add_theme_font_size_override("font_size", 20)
 	submit_btn.custom_minimum_size = Vector2(200, 48)
+	apply_3d_style(submit_btn, Color("#1cb0f6"))
 	add_child(submit_btn)
 
 	submit_btn.pressed.connect(_on_submit_pressed)

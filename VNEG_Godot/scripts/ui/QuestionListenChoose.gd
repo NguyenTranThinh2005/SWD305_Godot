@@ -90,19 +90,7 @@ func _do_setup() -> void:
 		btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		btn.alignment = HORIZONTAL_ALIGNMENT_LEFT
 
-		var style = StyleBoxFlat.new()
-		style.bg_color = Color(0.15, 0.16, 0.25, 1)
-		style.border_width_left = 3
-		style.border_color = Color(0.35, 0.35, 0.5, 1)
-		style.corner_radius_top_left = 10
-		style.corner_radius_top_right = 10
-		style.corner_radius_bottom_right = 10
-		style.corner_radius_bottom_left = 10
-		style.content_margin_left = 16
-		style.content_margin_right = 16
-		style.content_margin_top = 8
-		style.content_margin_bottom = 8
-		btn.add_theme_stylebox_override("normal", style)
+		apply_3d_style(btn)
 
 		options_box.add_child(btn)
 		btn.pressed.connect(func():
@@ -167,33 +155,7 @@ func _on_option_selected(btn: Button, selected: String, correct: String, options
 	submit(is_correct, selected)
 
 func _style_correct(btn: Button) -> void:
-	var style = StyleBoxFlat.new()
-	style.bg_color = Color(0.1, 0.35, 0.15, 1)
-	style.border_width_left = 3
-	style.border_color = Color(0.3, 1.0, 0.4, 1)
-	style.corner_radius_top_left = 10
-	style.corner_radius_top_right = 10
-	style.corner_radius_bottom_right = 10
-	style.corner_radius_bottom_left = 10
-	style.content_margin_left = 16
-	style.content_margin_right = 16
-	style.content_margin_top = 8
-	style.content_margin_bottom = 8
-	btn.add_theme_stylebox_override("disabled", style)
-	btn.add_theme_color_override("font_disabled_color", Color(0.3, 1.0, 0.5))
+	apply_3d_correct(btn)
 
 func _style_wrong(btn: Button) -> void:
-	var style = StyleBoxFlat.new()
-	style.bg_color = Color(0.35, 0.1, 0.1, 1)
-	style.border_width_left = 3
-	style.border_color = Color(1.0, 0.3, 0.3, 1)
-	style.corner_radius_top_left = 10
-	style.corner_radius_top_right = 10
-	style.corner_radius_bottom_right = 10
-	style.corner_radius_bottom_left = 10
-	style.content_margin_left = 16
-	style.content_margin_right = 16
-	style.content_margin_top = 8
-	style.content_margin_bottom = 8
-	btn.add_theme_stylebox_override("disabled", style)
-	btn.add_theme_color_override("font_disabled_color", Color(1.0, 0.4, 0.4))
+	apply_3d_wrong(btn)

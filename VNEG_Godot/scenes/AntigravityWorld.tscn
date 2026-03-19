@@ -127,9 +127,9 @@ layout_mode = 1
 anchors_preset = 10
 anchor_right = 1.0
 offset_left = 15.0
-offset_top = 62.0
+offset_top = 100.0
 offset_right = -15.0
-offset_bottom = 175.0
+offset_bottom = 200.0
 grow_horizontal = 2
 
 [node name="QuestionBox" type="VBoxContainer" parent="UI/Control/QuestionPanel"]

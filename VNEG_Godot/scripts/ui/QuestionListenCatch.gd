@@ -26,13 +26,7 @@ func _do_setup() -> void:
 	play_btn.add_theme_font_size_override("font_size", 28)
 	play_btn.custom_minimum_size = Vector2(0, 80)
 	
-	var play_style = StyleBoxFlat.new()
-	play_style.bg_color = Color(0.8, 0.4, 0.2, 1)
-	play_style.corner_radius_top_left = 15
-	play_style.corner_radius_top_right = 15
-	play_style.corner_radius_bottom_right = 15
-	play_style.corner_radius_bottom_left = 15
-	play_btn.add_theme_stylebox_override("normal", play_style)
+	apply_3d_style(play_btn, Color("#ff9600"))
 	
 	add_child(play_btn)
 
@@ -98,15 +92,7 @@ func _do_setup() -> void:
 		btn.add_theme_font_size_override("font_size", 32)
 		btn.custom_minimum_size = Vector2(250, 100)
 		
-		var style = StyleBoxFlat.new()
-		style.bg_color = Color(0.15, 0.4, 0.6, 1)
-		style.border_width_bottom = 6
-		style.border_color = Color(0.1, 0.25, 0.4, 1)
-		style.corner_radius_top_left = 20
-		style.corner_radius_top_right = 20
-		style.corner_radius_bottom_right = 20
-		style.corner_radius_bottom_left = 20
-		btn.add_theme_stylebox_override("normal", style)
+		apply_3d_style(btn)
 
 		options_box.add_child(btn)
 		btn.pressed.connect(func():
@@ -166,21 +152,7 @@ func _on_option_selected(btn: Button, selected: String, correct: String, options
 	submit(is_correct, selected)
 
 func _style_correct(btn: Button) -> void:
-	var style = StyleBoxFlat.new()
-	style.bg_color = Color(0.2, 0.7, 0.3, 1)
-	style.corner_radius_top_left = 20
-	style.corner_radius_top_right = 20
-	style.corner_radius_bottom_right = 20
-	style.corner_radius_bottom_left = 20
-	btn.add_theme_stylebox_override("disabled", style)
-	btn.add_theme_color_override("font_disabled_color", Color(1, 1, 1))
+	apply_3d_correct(btn)
 
 func _style_wrong(btn: Button) -> void:
-	var style = StyleBoxFlat.new()
-	style.bg_color = Color(0.8, 0.2, 0.2, 1)
-	style.corner_radius_top_left = 20
-	style.corner_radius_top_right = 20
-	style.corner_radius_bottom_right = 20
-	style.corner_radius_bottom_left = 20
-	btn.add_theme_stylebox_override("disabled", style)
-	btn.add_theme_color_override("font_disabled_color", Color(1, 1, 1))
+	apply_3d_wrong(btn)

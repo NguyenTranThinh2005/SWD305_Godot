@@ -24,6 +24,7 @@ var is_transitioning: bool = false
 var gravity_flipped: bool = false
 
 func _ready():
+	_setup_theme()
 	_update_hud()
 	# Connect GameManager signals
 	GameManager.hp_changed.connect(func(_hp): _update_hud())
@@ -83,6 +84,61 @@ func _update_hud() -> void:
 	hp_label.text = hp_icons.strip_edges()
 	if GameManager.hp <= 0:
 		hp_label.text = "💀"
+
+func _setup_theme() -> void:
+	var panel_style = StyleBoxFlat.new()
+	panel_style.bg_color = Color.WHITE
+	panel_style.corner_radius_top_left = 20
+	panel_style.corner_radius_top_right = 20
+	panel_style.corner_radius_bottom_right = 20
+	panel_style.corner_radius_bottom_left = 20
+	panel_style.border_width_bottom = 6
+	panel_style.border_color = Color("#e5e5e5")
+	
+	question_panel.add_theme_stylebox_override("panel", panel_style)
+	choices_panel.add_theme_stylebox_override("panel", panel_style.duplicate())
+	$UI/Control/PauseMenu/CenterContainer/PanelContainer.add_theme_stylebox_override("panel", panel_style.duplicate())
+	
+	# Force QuestionPanel down to prevent HUD overlap (overrides scene settings)
+	question_panel.offset_top = 100.0
+	question_panel.offset_bottom = 200.0
+	
+	question_label.add_theme_color_override("font_color", Color("#4b4b4b"))
+	stars_label.add_theme_color_override("font_color", Color("#ff9600"))
+	timer_label.add_theme_color_override("font_color", Color("#1cb0f6"))
+	
+	_apply_3d_style(pause_btn, Color("#ce82ff"))
+	_apply_3d_style(resume_btn, Color("#58cc02"))
+	_apply_3d_style(retry_btn, Color("#ff9600"))
+	_apply_3d_style(menu_btn, Color("#ff4b4b"))
+
+func _apply_3d_style(btn: Button, base_color: Color) -> void:
+	btn.custom_minimum_size = Vector2(0, 60)
+	btn.add_theme_font_size_override("font_size", 20)
+	btn.add_theme_color_override("font_color", Color.WHITE)
+	btn.add_theme_color_override("font_hover_color", Color.WHITE)
+	btn.add_theme_color_override("font_pressed_color", Color.WHITE)
+	btn.add_theme_color_override("font_focus_color", Color.WHITE)
+	
+	var style = StyleBoxFlat.new()
+	style.bg_color = base_color
+	style.border_width_bottom = 6
+	style.border_color = base_color.darkened(0.2)
+	style.corner_radius_top_left = 16
+	style.corner_radius_top_right = 16
+	style.corner_radius_bottom_right = 16
+	style.corner_radius_bottom_left = 16
+	
+	btn.add_theme_stylebox_override("normal", style)
+	
+	var hover_style = style.duplicate()
+	hover_style.bg_color = base_color.lightened(0.1)
+	btn.add_theme_stylebox_override("hover", hover_style)
+	
+	var pressed_style = style.duplicate()
+	pressed_style.border_width_bottom = 0
+	pressed_style.content_margin_top = 6
+	btn.add_theme_stylebox_override("pressed", pressed_style)
 
 # ---------------------------------------------------------------
 # EXTRACT QUESTION TEXT — hoc JSON từ Backend
@@ -377,13 +433,15 @@ func _end_game() -> void:
 		_update_hud()
 		_show_question(0)
 	)
+	_apply_3d_style(btn_retry, Color("#ff9600"))
 
 	# Exit button
 	var btn_exit = Button.new()
-	btn_exit.text = " Ve Trang Chinh "
+	btn_exit.text = " Về Trang Chính "
 	btn_exit.add_theme_font_size_override("font_size", 22)
-	btn_exit.custom_minimum_size = Vector2(180, 55)
+	btn_exit.custom_minimum_size = Vector2(200, 60)
 	btn_hbox.add_child(btn_exit)
+	_apply_3d_style(btn_exit, Color("#4b4b4b"))
 
 	# Submit to backend (Skip for GUEST)
 	if GameManager.current_session_id != 0:
