@@ -1,5 +1,12 @@
 extends Node2D
 
+class Ticker extends Node:
+	var parent_world
+	func _process(delta: float) -> void:
+		if parent_world:
+			parent_world._tick_timer_always(delta)
+
+
 @onready var ui_canvas: CanvasLayer = $UI
 @onready var stars_label: Label = $UI/Control/MarginContainer/TopPanel/TopHUD/StarsLabel
 @onready var hp_label: Label = $UI/Control/MarginContainer/TopPanel/TopHUD/HPLabel
@@ -38,6 +45,14 @@ func _ready():
 	_setup_modal_ui()
 	_build_level_blocks()
 	
+	timer_sec = GameManager.game_questions.size() * 10.0
+	if timer_sec <= 0: timer_sec = 60.0
+	
+	var ticker = Ticker.new()
+	ticker.parent_world = self
+	ticker.process_mode = Node.PROCESS_MODE_ALWAYS
+	add_child(ticker)
+	
 	# Connect GameManager signals
 	GameManager.hp_changed.connect(func(_hp): _update_hud())
 	GameManager.score_changed.connect(func(_s, _c): _update_hud())
@@ -50,12 +65,21 @@ func _ready():
 	pause_menu.process_mode = PROCESS_MODE_ALWAYS
 
 func _process(delta: float) -> void:
-	if not is_game_over and not get_tree().paused:
-		timer_sec += delta
-		var minutes = int(timer_sec) / 60
-		var seconds = int(timer_sec) % 60
-		var tenths = int(timer_sec * 10) % 10
-		timer_label.text = "%02d.%d:%02d" % [minutes, tenths, seconds]
+	pass # Logic moved to _tick_timer_always
+
+func _tick_timer_always(delta: float) -> void:
+	if is_game_over: return
+	if get_tree().paused and pause_menu.visible: return # Stop ticking if PAUSE MENU (ESC) is active
+	
+	timer_sec -= delta
+	if timer_sec <= 0:
+		timer_sec = 0
+		GameManager.hp = 0
+		_end_game()
+		
+	var minutes = int(timer_sec) / 60
+	var seconds = int(timer_sec) % 60
+	timer_label.text = "%02d:%02d" % [minutes, seconds]
 
 func _input(event: InputEvent) -> void:
 	if event.is_action_pressed("ui_cancel") and not is_game_over:
@@ -70,7 +94,8 @@ func _on_pause_retry_pressed() -> void:
 	_toggle_pause()
 	GameManager.restart_session()
 	is_game_over = false
-	timer_sec = 0.0
+	timer_sec = GameManager.game_questions.size() * 10.0
+	if timer_sec <= 0: timer_sec = 60.0
 	get_tree().reload_current_scene()
 
 func _on_pause_menu_pressed() -> void:
@@ -313,6 +338,15 @@ func _show_question_modal(q_index: int) -> void:
 			q_node = preload("res://scripts/ui/QuestionListenCatch.gd").new()
 		"fill_blank":
 			q_node = preload("res://scripts/ui/QuestionFillBlank.gd").new()
+		"drag_drop_sentence":
+			q_node = preload("res://scripts/ui/QuestionDragDropSentence.gd").new()
+			instruction_lbl.text = "Cách chơi: Sắp xếp các từ thành câu hoàn chỉnh."
+		"listen_choose":
+			q_node = preload("res://scripts/ui/QuestionListenChoose.gd").new()
+			instruction_lbl.text = "Cách chơi: Lắng nghe và chọn đáp án chính xác."
+		"rhythm_reading":
+			q_node = preload("res://scripts/ui/QuestionRhythmReading.gd").new()
+			instruction_lbl.text = "Cách chơi: Đọc theo nhịp điệu bài hát."
 		_:
 			q_node = preload("res://scripts/ui/QuestionMultipleChoice.gd").new()
 			
@@ -473,7 +507,8 @@ func _end_game() -> void:
 	var elapsed = GameManager.get_elapsed_time()
 	var time_str = "%d phut %02d giay" % [int(elapsed) / 60, int(elapsed) % 60]
 
-	if GameManager.hp <= 0: header_lbl.text = "HET MANG!"
+	if timer_sec <= 0: header_lbl.text = "HET GIO!"
+	elif GameManager.hp <= 0: header_lbl.text = "HET MANG!"
 	elif accuracy >= 80: header_lbl.text = "XUAT SAC!"
 	else: header_lbl.text = "KET THUC!"
 

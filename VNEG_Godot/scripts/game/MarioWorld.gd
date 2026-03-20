@@ -182,6 +182,15 @@ func _show_question_modal():
 			q_node = preload("res://scripts/ui/QuestionListenCatch.gd").new()
 		"fill_blank":
 			q_node = preload("res://scripts/ui/QuestionFillBlank.gd").new()
+		"drag_drop_sentence":
+			q_node = preload("res://scripts/ui/QuestionDragDropSentence.gd").new()
+			instruction_lbl.text = "Cách chơi: Sắp xếp các từ thành câu hoàn chỉnh."
+		"listen_choose":
+			q_node = preload("res://scripts/ui/QuestionListenChoose.gd").new()
+			instruction_lbl.text = "Cách chơi: Lắng nghe và chọn đáp án chính xác."
+		"rhythm_reading":
+			q_node = preload("res://scripts/ui/QuestionRhythmReading.gd").new()
+			instruction_lbl.text = "Cách chơi: Đọc theo nhịp điệu bài hát."
 		_:
 			q_node = preload("res://scripts/ui/QuestionMultipleChoice.gd").new()
 			
