@@ -6,11 +6,8 @@ extends Node
 
 var current_session_id: int = 0
 var current_game_id: int = 0
-<<<<<<< HEAD
 var current_map_id: int = 1
-=======
 var current_task_id: int = 0
->>>>>>> 11d205abce7c978c4788a2e2f04ecd88b7015f2c
 var game_questions: Array = []
 var answered_questions: Array = []
 
