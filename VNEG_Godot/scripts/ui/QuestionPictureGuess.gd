@@ -49,51 +49,115 @@ func _do_setup() -> void:
 	submit_btn.pressed.connect(_on_submit_pressed)
 	input_field.text_submitted.connect(func(_text): _on_submit_pressed())
 	
-	# Load Image
-	var img_url = str(question_data.get("imageUrl", ""))
-	if img_url == "":
-		img_url = str(question_data.get("image_url", "")) # Fallback to snake_case
+	# Load Images - Support multiple URLs separated by '|'
+	var img_raw = str(question_data.get("imageUrl", ""))
+	if img_raw == "":
+		img_raw = str(question_data.get("image_url", ""))
 		
-	if img_url != "":
-		_load_image(img_url)
+	if img_raw != "":
+		var urls = img_raw.split("|")
+		if urls.size() > 1:
+			# Multi-image mode (Pictogram)
+			image_rect.queue_free() # Remove the single placeholder
+			var container = HBoxContainer.new()
+			container.alignment = BoxContainer.ALIGNMENT_CENTER
+			container.add_theme_constant_override("separation", 10)
+			add_child(container)
+			move_child(container, 0) # Keep it at the top or after hint
+			
+			for url in urls:
+				var rect = TextureRect.new()
+				rect.custom_minimum_size = Vector2(240, 180) # Smaller for side-by-side
+				rect.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+				rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+				container.add_child(rect)
+				_load_image_to_rect(url.strip_edges(), rect)
+		else:
+			# Single image mode
+			_load_image_to_rect(urls[0].strip_edges(), image_rect)
 	else:
 		push_warning("PictureGuess: imageUrl is missing in q_data")
 
-func _load_image(url: String) -> void:
+var _image_retries: Dictionary = {}
+const MAX_IMG_RETRIES = 3
+
+func _load_image_to_rect(url: String, target_rect: TextureRect) -> void:
 	if not url.begins_with("http"): 
 		push_error("PictureGuess: Invalid URL: " + url)
 		return
 	
-	image_loader = HTTPRequest.new()
-	add_child(image_loader)
-	image_loader.request_completed.connect(_on_image_downloaded)
+	_image_retries[target_rect] = 0
+	_do_image_request(url, target_rect)
+
+func _do_image_request(url: String, target_rect: TextureRect) -> void:
+	var loader = HTTPRequest.new()
+	loader.use_threads = true # Use threads to prevent blocking
+	add_child(loader)
 	
-	# Specific User-Agent to avoid being blocked by Wikimedia Commons
+	loader.request_completed.connect(func(_result, response_code, _headers, body): 
+		_on_image_loaded(response_code, body, target_rect, loader, url)
+	)
+	
 	var headers = ["User-Agent: VNEG_Godot_Game/1.5 (contact: thinhnt@fpt.edu.vn)"]
-	var err = image_loader.request(url, headers)
+	var err = loader.request(url, headers)
 	if err != OK:
 		push_error("PictureGuess: HTTPRequest setup failed for " + url)
 
-func _on_image_downloaded(_result, response_code, _headers, body) -> void:
-	if response_code == 200:
+func _on_image_loaded(response_code: int, body: PackedByteArray, target_rect: TextureRect, loader: HTTPRequest, url: String) -> void:
+	if response_code == 200 and body.size() > 8:
 		var image = Image.new()
-		var err = image.load_jpg_from_buffer(body)
-		if err != OK:
+		var err = ERR_FILE_CORRUPT
+		
+		# Manual signature check for version compatibility (load_from_buffer is 4.2+)
+		if body[0] == 0xFF and body[1] == 0xD8: # JPG
+			err = image.load_jpg_from_buffer(body)
+		elif body[0] == 0x89 and body[1] == 0x50: # PNG
 			err = image.load_png_from_buffer(body)
-		if err != OK:
+		elif body[0] == 0x52 and body[1] == 0x49: # WEBP (RIFF)
 			err = image.load_webp_from_buffer(body)
-			
-		if err == OK:
-			var texture = ImageTexture.create_from_image(image)
-			image_rect.texture = texture
 		else:
-			push_error("PictureGuess: Failed to parse image body. Size: " + str(body.size()))
+			# Fallback if no signature found
+			err = image.load_png_from_buffer(body)
+			if err != OK: err = image.load_jpg_from_buffer(body)
+		
+		if err == OK:
+			# Downscale to max 512px to prevent GPU memory errors
+			var MAX_SIZE = 512
+			var w = image.get_width()
+			var h = image.get_height()
+			if w > MAX_SIZE or h > MAX_SIZE:
+				var scale = float(MAX_SIZE) / float(max(w, h))
+				image.resize(int(w * scale), int(h * scale), Image.INTERPOLATE_BILINEAR)
+				
+			var texture = ImageTexture.create_from_image(image)
+			if is_instance_valid(target_rect):
+				target_rect.texture = texture
+				target_rect.modulate = Color.WHITE # Reset color if it was an error icon
+		else:
+			push_error("PictureGuess: Failed to parse image (Signatures mismatch). Size: " + str(body.size()))
+			_handle_image_failure(response_code, target_rect, url)
 	else:
-		push_error("PictureGuess: Image download failed. Code: " + str(response_code))
+		_handle_image_failure(response_code, target_rect, url)
 	
-	if is_instance_valid(image_loader):
-		image_loader.queue_free()
+	if is_instance_valid(loader):
+		loader.queue_free()
 
+func _handle_image_failure(response_code: int, target_rect: TextureRect, url: String) -> void:
+	if is_instance_valid(target_rect) and _image_retries.has(target_rect):
+		var retries = _image_retries[target_rect]
+		if retries < MAX_IMG_RETRIES:
+			_image_retries[target_rect] = retries + 1
+			var wait_secs = pow(2.0, retries)
+			print("PictureGuess: download failed (Code: ", response_code, "). Retrying in ", wait_secs, "s...")
+			await get_tree().create_timer(wait_secs).timeout
+			if is_instance_valid(target_rect):
+				_do_image_request(url, target_rect)
+		else:
+			push_error("PictureGuess: download failed permanently. Code: " + str(response_code))
+			if is_instance_valid(target_rect):
+				target_rect.texture = load("res://assets/mario_platformer/icon.png")
+				target_rect.modulate = Color(1, 0.5, 0.5) # Error color
+	
 func _on_submit_pressed() -> void:
 	var user_ans = input_field.text.strip_edges()
 	if user_ans.is_empty():

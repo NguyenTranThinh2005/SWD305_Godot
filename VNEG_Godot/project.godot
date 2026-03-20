@@ -24,6 +24,7 @@ API="*res://scripts/autoloads/API.gd"
 AuthManager="*res://scripts/autoloads/AuthManager.gd"
 GameManager="*res://scripts/autoloads/GameManager.gd"
 GrammarDB="*res://scripts/autoloads/GrammarDB.gd"
+ProgressManager="*res://scripts/autoloads/ProgressManager.gd"
 
 [dotnet]
 

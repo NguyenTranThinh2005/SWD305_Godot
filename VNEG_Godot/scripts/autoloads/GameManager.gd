@@ -6,6 +6,7 @@ extends Node
 
 var current_session_id: int = 0
 var current_game_id: int = 0
+var current_map_id: int = 1
 var game_questions: Array = []
 var answered_questions: Array = []
 

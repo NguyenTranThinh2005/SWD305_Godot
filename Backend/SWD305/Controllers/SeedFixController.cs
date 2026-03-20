@@ -203,30 +203,24 @@ namespace SWD305.Controllers
             {
                 [1] = new()
                 {
-                    ("Con vật này là gì?", "Con mèo", "https://upload.wikimedia.org/wikipedia/commons/3/3a/Cat03.jpg", "[V6-ULTIMATE] Con vật này hay kêu meo meo và thích bắt chuột."),
-                    ("Con vật này là gì?", "Con chó", "https://upload.wikimedia.org/wikipedia/commons/0/0a/B%E1%BA%AFc_H%C3%A0_dog_side.jpg", "[V6-ULTIMATE] Loài vật trung thành, hay sủa gâu gâu."),
-                    ("Đây là quả gì?", "Quả táo", "https://upload.wikimedia.org/wikipedia/commons/1/15/Red_Apple.jpg", "[V6-ULTIMATE] Quả có màu đỏ, giòn và ngọt, rất tốt cho sức khỏe."),
-                    ("Đây là quả gì?", "Quả chuối", "https://upload.wikimedia.org/wikipedia/commons/9/98/Bananas_on_black_background_02.jpg", "[V6-ULTIMATE] Quả có hình dáng dài, vỏ màu vàng khi chín."),
-                    ("Phương tiện này là gì?", "Xe đạp", "https://upload.wikimedia.org/wikipedia/commons/3/33/Hue_Vietnam_Nun-with-bicycle-01.jpg", "[V6-ULTIMATE] Phương tiện có hai bánh, chạy bằng sức người đạp."),
-                    ("Phương tiện này là gì?", "Xe máy", "https://upload.wikimedia.org/wikipedia/commons/d/d2/Honda_Super_Cub_with_watering_can.jpg", "[V6-ULTIMATE] Phương tiện phổ biến nhất tại Việt Nam, có động cơ và hai bánh."),
+                    ("Nhìn hình bắt chữ!", "Cá ngựa", "https://upload.wikimedia.org/wikipedia/commons/0/08/Astronotus_ocellatus.jpg|https://upload.wikimedia.org/wikipedia/commons/a/a2/Horse_December_2014-1.jpg", "[V8-FIX] Gợi ý: Loài cá có hình dáng giống con vật trên cạn."),
+                    ("Nhìn hình bắt chữ!", "Đồng hồ", "https://upload.wikimedia.org/wikipedia/commons/f/f5/Landscape-countryside-way-fields_%2824243301441%29.jpg|https://upload.wikimedia.org/wikipedia/commons/8/89/Hanoi-lac-hoan-kiem.jpg", "[V8-FIX] Gợi ý: Vật dụng dùng để đo thời gian."),
+                    ("Nhìn hình bắt chữ!", "Ba lô", "https://upload.wikimedia.org/wikipedia/commons/f/f7/Father_and_son_27.jpg|https://upload.wikimedia.org/wikipedia/commons/6/61/Lottery_ticket_of_the_Northern_lottery_in_Vietnam.jpg", "[V8-FIX] Gợi ý: Vật dụng để đựng đồ khi đi học, đi chơi."),
+                    ("Nhìn hình bắt chữ!", "Đường tăng", "https://upload.wikimedia.org/wikipedia/commons/2/21/Link_road.jpg|https://upload.wikimedia.org/wikipedia/commons/e/e5/Monks_at_Boudhanath.jpg", "[V8-FIX] Gợi ý: Nhân vật chính trong phim Tây Du Ký."),
                 },
                 [2] = new()
                 {
-                    ("Hình ảnh này biểu trưng cho?", "Hòa bình", "https://upload.wikimedia.org/wikipedia/commons/4/44/A_White_Dove_at_Alnwick_gardens_-_panoramio_%281%29.jpg", "[V6-ULTIMATE] Chim bồ câu trắng mang thông điệp này."),
-                    ("Đây là loài cây biểu tượng của VN?", "Cây tre", "https://upload.wikimedia.org/wikipedia/commons/2/20/Bamboo_tree_showing_stalk_and_leaves.jpg", "[V6-ULTIMATE] Loài cây thân đốt, dẻo dai, gắn liền với làng quê Việt."),
-                    ("Loài hoa này thường mọc ở đầm lầy?", "Hoa sen", "https://upload.wikimedia.org/wikipedia/commons/4/48/Lotus_flowers_Vietnam_%2838834388684%29.jpg", "[V6-ULTIMATE] Gần bùn mà chẳng hôi tanh mùi bùn."),
-                    ("Địa danh nổi tiếng này ở Quảng Ninh?", "Vịnh Hạ Long", "https://upload.wikimedia.org/wikipedia/commons/2/2d/Halong_Bay_in_Vietnam.jpg", "[V6-ULTIMATE] Di sản thiên nhiên thế giới với hàng ngàn đảo đá vôi."),
-                    ("Nhạc cụ truyền thống VN?", "Đàn bầu", "https://upload.wikimedia.org/wikipedia/commons/a/a4/Vietnamese_musical_instrument_Dan_bau_2.jpg", "[V6-ULTIMATE] Nhạc cụ chỉ có một dây nhưng phát ra âm thanh rất độc đáo."),
-                    ("Trang phục truyền thống của VN?", "Áo dài", "https://upload.wikimedia.org/wikipedia/commons/c/cb/Vietnamese_girl_wearing_ao_dai_3.jpg", "[V6-ULTIMATE] Trang phục tôn vinh vẻ đẹp của người phụ nữ Việt Nam."),
+                    ("Nhìn hình bắt chữ!", "Hành lý", "https://upload.wikimedia.org/wikipedia/commons/a/a2/Mixed_onions.jpg|https://upload.wikimedia.org/wikipedia/commons/d/d9/ANTORINI_Executive_Leather_Briefcase.jpg", "[V8-FIX] Gợi ý: Đồ đạc mang theo khi đi xa."),
+                    ("Nhìn hình bắt chữ!", "Sơn hà", "https://upload.wikimedia.org/wikipedia/commons/2/29/Himalayas%2C_Ama_Dablam%2C_Nepal.jpg|https://upload.wikimedia.org/wikipedia/commons/8/89/Wilkin_River_close_to_its_confluence_with_Makarora_River%2C_Otago%2C_New_Zealand.jpg", "[V8-FIX] Gợi ý: Từ hán việt chỉ núi sông, đất nước."),
+                    ("Nhìn hình bắt chữ!", "Mật mã", "https://upload.wikimedia.org/wikipedia/commons/9/92/Natural_Beehive_and_Honeycombs.jpg|https://upload.wikimedia.org/wikipedia/commons/d/d6/QR_Code_Sample.png", "[V8-FIX] Gợi ý: Dãy ký tự dùng để bảo mật."),
+                    ("Nhìn hình bắt chữ!", "Cứng đầu", "https://upload.wikimedia.org/wikipedia/commons/f/f6/Stone_on_the_stones.jpg|https://upload.wikimedia.org/wikipedia/commons/4/4b/Profile_Silhouette_01.png", "[V8-FIX] Gợi ý: Tính cách không chịu nghe lời khuyên của người khác."),
                 },
                 [3] = new()
                 {
-                    ("Tác phẩm văn học kinh điển này là?", "Truyện Kiều", "https://upload.wikimedia.org/wikipedia/commons/b/b1/Kim_V%C3%A2n_Ki%E1%BB%81u_t%C3%A2n_truy%E1%BB%87n.jpg", "[V6-ULTIMATE] Tác phẩm tiêu biểu nhất của Nguyễn Du."),
-                    ("Đại thi hào dân tộc này là ai?", "Nguyễn Du", "https://upload.wikimedia.org/wikipedia/commons/3/37/T%C6%B0%E1%BB%A3ng_%C4%90%E1%BA%A1i_thi_h%C3%A0o_Nguy%E1%BB%85n_Du.jpg", "[V6-ULTIMATE] Tác giả của tác phẩm 'Đoạn trường tân thanh'."),
-                    ("Vùng đồng bằng lớn nhất miền Nam?", "Đồng bằng sông Cửu Long", "https://upload.wikimedia.org/wikipedia/commons/9/95/Delta_Mekong_mappa.png", "[V6-ULTIMATE] Vùng đất trù phú với mạng lưới sông ngòi chằng chịt."),
-                    ("Nơi yên nghỉ của Bác Hồ?", "Lăng Bác", "https://upload.wikimedia.org/wikipedia/commons/d/dd/Hanoi_Vietnam_Mausoleum-of-Ho-Chi-Minh-01.jpg", "[V6-ULTIMATE] Công trình tại quảng trường Ba Đình lịch sử."),
-                    ("Ký hiệu này dùng để làm gì?", "Dấu chấm phẩy", "https://upload.wikimedia.org/wikipedia/commons/4/4a/Semicolon.png", "[V6-ULTIMATE] Dùng để ngăn cách các vế câu trong câu ghép phức tạp."),
-                    ("Thể thơ 6 chữ và 8 chữ?", "Thơ lục bát", "https://upload.wikimedia.org/wikipedia/commons/8/83/Tam_t%E1%BB%B1_kinh_l%E1%BB%A5c_b%C3%A1t_di%E1%BB%85n_%C3%A2m_second_page.png", "[V6-ULTIMATE] Thể thơ dân tộc truyền thống của Việt Nam."),
+                    ("Nhìn hình bắt chữ!", "Nhà báo", "https://upload.wikimedia.org/wikipedia/commons/a/a1/Adam_Thoroughgood_House_-_South_LR.jpg|https://upload.wikimedia.org/wikipedia/commons/0/03/Panthera_pardus_close_up.jpg", "[V8-FIX] Gợi ý: Người làm nghề viết tin tức."),
+                    ("Nhìn hình bắt chữ!", "Cá vàng", "https://upload.wikimedia.org/wikipedia/commons/0/08/Astronotus_ocellatus.jpg|https://upload.wikimedia.org/wikipedia/commons/6/60/Gold_Ingots_on_white_background.jpg", "[V8-FIX] Gợi ý: Loài cá cảnh phổ biến, có màu sắc rực rỡ."),
+                    ("Nhìn hình bắt chữ!", "Báo thức", "https://upload.wikimedia.org/wikipedia/commons/0/03/Panthera_pardus_close_up.jpg|https://upload.wikimedia.org/wikipedia/commons/4/4b/Profile_Silhouette_01.png", "[V8-FIX] Gợi ý: Chế độ trên điện thoại giúp bạn dậy sớm."),
+                    ("Nhìn hình bắt chữ!", "Bút ký", "https://upload.wikimedia.org/wikipedia/commons/6/6a/Fountain_Pen.jpg|https://upload.wikimedia.org/wikipedia/commons/0/07/Isabella_L%C3%B6vin_signing_climate_law_referral.jpg", "[V8-FIX] Gợi ý: Loại bút cao cấp hoặc tác phẩm văn học mang tính tự thuật."),
                 },
             };
 

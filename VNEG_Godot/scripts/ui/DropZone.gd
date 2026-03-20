@@ -1,9 +1,9 @@
 extends HFlowContainer
 
-func _can_drop_data(at_position: Vector2, data) -> bool:
+func _can_drop_data(_at_position: Vector2, data) -> bool:
 	return data is Label and data.has_method("setup")
 
-func _drop_data(at_position: Vector2, data) -> void:
+func _drop_data(_at_position: Vector2, data) -> void:
 	if data.get_parent():
 		data.get_parent().remove_child(data)
 	
@@ -11,7 +11,7 @@ func _drop_data(at_position: Vector2, data) -> void:
 	var insert_index = -1
 	for i in range(get_child_count()):
 		var child = get_child(i)
-		if at_position.x < (child.position.x + child.size.x / 2):
+		if _at_position.x < (child.position.x + child.size.x / 2):
 			insert_index = i
 			break
 	

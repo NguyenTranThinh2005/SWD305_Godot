@@ -1,0 +1,23 @@
+[gd_scene load_steps=4 format=3 uid="uid://mario_player_123"]
+
+[ext_resource type="Script" path="res://scripts/game/PlayerCharacter.gd" id="1_player"]
+[ext_resource type="Texture2D" path="res://assets/mario_platformer/Player_Spritesheet.png" id="2_texture"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_1"]
+size = Vector2(16, 16)
+
+[node name="Player" type="CharacterBody2D"]
+script = ExtResource("1_player")
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+texture = ExtResource("2_texture")
+hframes = 4
+vframes = 4
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("RectangleShape2D_1")
+
+[node name="Camera2D" type="Camera2D" parent="."]
+zoom = Vector2(3, 3)
+limit_bottom = 600
+position_smoothing_enabled = true

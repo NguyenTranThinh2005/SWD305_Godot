@@ -61,17 +61,40 @@ func _do_setup() -> void:
 			_on_option_selected(btn, opt_text, correct_ans, options_box)
 		)
 
+var _audio_url: String = ""
+var _retry_count: int = 0
+const MAX_RETRIES = 3
+
 func _load_audio_from_url(url: String) -> void:
+	_audio_url = url
+	_retry_count = 0
+	_do_audio_request()
+
+func _do_audio_request() -> void:
 	var http = HTTPRequest.new()
 	add_child(http)
 	http.request_completed.connect(_on_audio_downloaded)
 	
 	var headers = ["User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"]
-	http.request(url, headers)
+	http.request(_audio_url, headers)
 	play_btn.text = "Đang tải âm thanh..."
 
 func _on_audio_downloaded(_result, response_code, headers, body) -> void:
 	print("ListenChoose: Audio downloaded. Code: ", response_code, " Body size: ", body.size())
+	if response_code == 429:
+		# Rate limited — retry with exponential backoff
+		_retry_count += 1
+		if _retry_count <= MAX_RETRIES:
+			var wait_secs = pow(2.0, _retry_count) # 2s, 4s, 8s
+			play_btn.text = "Đang thử lại (%d/%d)..." % [_retry_count, MAX_RETRIES]
+			print("ListenChoose: Rate limited (429). Retrying in %ds..." % wait_secs)
+			await get_tree().create_timer(wait_secs).timeout
+			_do_audio_request()
+		else:
+			play_btn.text = "Lỗi âm thanh! (Rate limited)"
+			print("ListenChoose: Too many retries. Giving up.")
+		return
+		
 	if response_code == 200 and body.size() > 0:
 		var stream = null
 		
@@ -101,12 +124,7 @@ func _on_audio_downloaded(_result, response_code, headers, body) -> void:
 			if is_wav:
 				print("ListenChoose: Detected WAV format.")
 				stream = AudioStreamWAV.new()
-				# Simple WAV loading for standard PCM (Godot handles most common formats)
 				stream.data = body
-				# Note: Setting properties like format/loop/mix_rate might be needed for RAW
-				# but for standard WAV header, Godot often handles it. 
-				# Actually, AudioStreamWAV.data expects the raw samples if not loaded from file.
-				# A better runtime solution for WAV might be needed if this fails.
 			else:
 				# Check for MP3
 				var is_mp3 = false

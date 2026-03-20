@@ -57,8 +57,12 @@ func _load_maps() -> void:
 		var maps = response["data"]
 		for m_data in maps:
 			var btn = Button.new()
-			btn.text = "🌍 " + str(m_data.get("name", "Map"))
 			var m_id = int(m_data.get("id", 0))
+			var is_unlocked = ProgressManager.is_map_unlocked(m_id)
+			
+			btn.text = ("🌍 " if is_unlocked else "🔒 ") + str(m_data.get("name", "Map"))
+			btn.disabled = !is_unlocked
+			
 			btn.pressed.connect(func(): _on_map_selected(m_id, m_data.get("name", "Map")))
 			map_container.add_child(btn)
 	else:
@@ -67,44 +71,14 @@ func _load_maps() -> void:
 		map_container.add_child(err)
 
 func _on_map_selected(map_id: int, map_name: String) -> void:
-	selected_map_id = map_id
-	selected_game_id = 0
-	play_button.disabled = true
-	print("Đã chọn Map ID: ", map_id, " - ", map_name)
+	# Thay đổi logic: Thay vì hiện GamesContainer bên dưới,
+	# chúng ta chuyển thẳng sang Scene Interactive Map (Mario Style)
+	print("Đang chuyển sang Interactive Map cho: ", map_name)
 	
-	for child in games_container.get_children():
-		if child.name != "Label" and child != play_button:
-			child.queue_free()
-			
-	var lbl = Label.new()
-	lbl.text = "Đang tải danh sách Game..."
-	games_container.add_child(lbl)
-	games_container.move_child(lbl, games_container.get_child_count() - 2)
-			
-	var response = await API.get_games_by_map(map_id)
-	lbl.queue_free()
-	
-	if response["ok"] and typeof(response["data"]) == TYPE_ARRAY:
-		var games = response["data"]
-		if games.size() == 0:
-			var no_game = Label.new()
-			no_game.text = "Map này chưa có Game nào."
-			games_container.add_child(no_game)
-			games_container.move_child(no_game, games_container.get_child_count() - 2)
-			return
-			
-		for g_data in games:
-			var btn = Button.new()
-			btn.text = "🎮 " + str(g_data.get("name", "Game"))
-			var g_id = int(g_data.get("id", 0))
-			btn.pressed.connect(func(): _on_game_selected(g_id, g_data.get("name", "Game")))
-			games_container.add_child(btn)
-			games_container.move_child(btn, games_container.get_child_count() - 2)
-	else:
-		var err = Label.new()
-		err.text = "Lỗi tải Game từ Server!"
-		games_container.add_child(err)
-		games_container.move_child(err, games_container.get_child_count() - 2)
+	# Lưu map_id vào GameManager để Scene sau có thể dùng
+	GameManager.current_map_id = map_id 
+	# Giả sử chúng ta dùng InteractiveMap.tscn chung cho các độ khó
+	get_tree().change_scene_to_file("res://scenes/InteractiveMap.tscn")
 
 func _on_game_selected(game_id: int, game_name: String) -> void:
 	selected_game_id = game_id

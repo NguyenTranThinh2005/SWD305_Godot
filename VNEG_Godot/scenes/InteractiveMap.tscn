@@ -1,0 +1,283 @@
+[gd_scene load_steps=18 format=3 uid="uid://interactive_map_123"]
+
+[ext_resource type="Script" path="res://scripts/game/InteractiveMap.gd" id="1_script"]
+[ext_resource type="PackedScene" uid="uid://item_block_123" path="res://scenes/ItemBlock.tscn" id="2_block"]
+[ext_resource type="PackedScene" uid="uid://player_character_123" path="res://scenes/PlayerCharacter.tscn" id="3_player"]
+[ext_resource type="PackedScene" uid="uid://map_question_panel_123" path="res://scenes/MapQuestionPanel.tscn" id="4_panel"]
+[ext_resource type="PackedScene" uid="uid://enemy_123" path="res://scenes/Enemy.tscn" id="5_enemy"]
+[ext_resource type="PackedScene" uid="uid://spikes_123" path="res://scenes/Spikes.tscn" id="6_spikes"]
+[ext_resource type="Texture2D" path="res://assets/mario_platformer/Flag.png" id="7_flag"]
+[ext_resource type="Texture2D" path="res://assets/mario_platformer/Background_0.png" id="8_bg"]
+[ext_resource type="Texture2D" path="res://assets/mario_platformer/Hill_0.png" id="9_hill0"]
+[ext_resource type="Texture2D" path="res://assets/mario_platformer/Hill_1.png" id="10_hill1"]
+[ext_resource type="Texture2D" path="res://assets/mario_platformer/Big_Bush.png" id="11_bush"]
+[ext_resource type="Texture2D" path="res://assets/mario_platformer/Dirt_Block.png" id="12_dirt"]
+[ext_resource type="Texture2D" path="res://assets/mario_platformer/Grass_Block.png" id="13_grass"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_portal"]
+size = Vector2(40, 400)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_solid"]
+size = Vector2(32, 32)
+
+[node name="InteractiveMap" type="Node2D"]
+script = ExtResource("1_script")
+
+[node name="BackgroundFailsafe" type="CanvasLayer" parent="."]
+layer = -100
+
+[node name="SkyColor" type="ColorRect" parent="BackgroundFailsafe"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.4226, 0.5317, 1, 1)
+
+[node name="ParallaxBackground" type="ParallaxBackground" parent="."]
+
+[node name="SkyLayer" type="ParallaxLayer" parent="ParallaxBackground"]
+motion_mirroring = Vector2(1024, 0)
+
+[node name="Sprite2D" type="Sprite2D" parent="ParallaxBackground/SkyLayer"]
+scale = Vector2(2, 4)
+texture = ExtResource("8_bg")
+centered = false
+
+[node name="HillLayer" type="ParallaxLayer" parent="ParallaxBackground"]
+motion_scale = Vector2(0.3, 1)
+motion_mirroring = Vector2(1024, 0)
+
+[node name="Hill1" type="Sprite2D" parent="ParallaxBackground/HillLayer"]
+position = Vector2(100, 318)
+texture = ExtResource("9_hill0")
+
+[node name="Hill2" type="Sprite2D" parent="ParallaxBackground/HillLayer"]
+position = Vector2(600, 318)
+texture = ExtResource("10_hill1")
+
+[node name="BushLayer" type="ParallaxLayer" parent="ParallaxBackground"]
+motion_scale = Vector2(0.6, 1)
+motion_mirroring = Vector2(1024, 0)
+
+[node name="Bush1" type="Sprite2D" parent="ParallaxBackground/BushLayer"]
+position = Vector2(300, 328)
+texture = ExtResource("11_bush")
+
+[node name="Ground" type="StaticBody2D" parent="."]
+position = Vector2(0, 350)
+collision_layer = 1
+collision_mask = 6
+
+[node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="Ground"]
+polygon = PackedVector2Array(0, 0, 3000, 0, 3000, 500, 0, 500)
+
+[node name="GrassSurface" type="TextureRect" parent="Ground"]
+offset_right = 1500.0
+offset_bottom = 16.0
+scale = Vector2(2, 2)
+texture = ExtResource("13_grass")
+stretch_mode = 1
+
+[node name="DirtFilling" type="TextureRect" parent="Ground"]
+offset_top = 32.0
+offset_right = 1500.0
+offset_bottom = 200.0
+scale = Vector2(2, 2)
+texture = ExtResource("12_dirt")
+stretch_mode = 1
+
+[node name="Blocks" type="Node2D" parent="."]
+
+[node name="Block1" parent="Blocks" instance=ExtResource("2_block")]
+position = Vector2(200, 260)
+game_id = 1
+game_name = "Ngữ pháp"
+
+[node name="Block2" parent="Blocks" instance=ExtResource("2_block")]
+position = Vector2(450, 260)
+game_id = 2
+game_name = "Chính tả"
+
+[node name="Block3" parent="Blocks" instance=ExtResource("2_block")]
+position = Vector2(750, 260)
+game_id = 3
+game_name = "Vùng miền"
+
+[node name="Block4" parent="Blocks" instance=ExtResource("2_block")]
+position = Vector2(1050, 260)
+game_id = 4
+game_name = "Xếp câu"
+
+[node name="Block5" parent="Blocks" instance=ExtResource("2_block")]
+position = Vector2(1400, 260)
+game_id = 5
+game_name = "Nhìn tranh"
+
+[node name="Block6" parent="Blocks" instance=ExtResource("2_block")]
+position = Vector2(1700, 260)
+game_id = 6
+game_name = "Ôn tập"
+
+[node name="Obstacles" type="Node2D" parent="."]
+
+[node name="Layout_Map1" type="Node2D" parent="Obstacles"]
+
+[node name="Enemy" parent="Obstacles/Layout_Map1" instance=ExtResource("5_enemy")]
+position = Vector2(350, 340)
+
+[node name="Spikes" parent="Obstacles/Layout_Map1" instance=ExtResource("6_spikes")]
+position = Vector2(600, 345)
+
+[node name="Layout_Map2" type="Node2D" parent="Obstacles"]
+visible = false
+
+[node name="Enemy" parent="Obstacles/Layout_Map2" instance=ExtResource("5_enemy")]
+position = Vector2(300, 340)
+
+[node name="Enemy2" parent="Obstacles/Layout_Map2" instance=ExtResource("5_enemy")]
+position = Vector2(900, 340)
+
+[node name="Spikes" parent="Obstacles/Layout_Map2" instance=ExtResource("6_spikes")]
+position = Vector2(400, 345)
+
+[node name="Spikes2" parent="Obstacles/Layout_Map2" instance=ExtResource("6_spikes")]
+position = Vector2(1200, 345)
+
+[node name="Stairs" type="Node2D" parent="Obstacles/Layout_Map2"]
+position = Vector2(550, 334)
+
+[node name="Step1" type="StaticBody2D" parent="Obstacles/Layout_Map2/Stairs"]
+collision_mask = 6
+
+[node name="Sprite2D" type="Sprite2D" parent="Obstacles/Layout_Map2/Stairs/Step1"]
+scale = Vector2(2, 2)
+texture = ExtResource("13_grass")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Obstacles/Layout_Map2/Stairs/Step1"]
+shape = SubResource("RectangleShape2D_solid")
+
+[node name="Step2" type="StaticBody2D" parent="Obstacles/Layout_Map2/Stairs"]
+position = Vector2(32, -32)
+collision_mask = 6
+
+[node name="Sprite2D" type="Sprite2D" parent="Obstacles/Layout_Map2/Stairs/Step2"]
+scale = Vector2(2, 2)
+texture = ExtResource("13_grass")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Obstacles/Layout_Map2/Stairs/Step2"]
+shape = SubResource("RectangleShape2D_solid")
+
+[node name="Layout_Map3" type="Node2D" parent="Obstacles"]
+visible = false
+
+[node name="Pyramid" type="Node2D" parent="Obstacles/Layout_Map3"]
+position = Vector2(800, 334)
+
+[node name="Base1" type="StaticBody2D" parent="Obstacles/Layout_Map3/Pyramid"]
+position = Vector2(-32, 0)
+collision_mask = 6
+[node name="Sprite2D" type="Sprite2D" parent="Obstacles/Layout_Map3/Pyramid/Base1"]
+scale = Vector2(2, 2)
+texture = ExtResource("12_dirt")
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Obstacles/Layout_Map3/Pyramid/Base1"]
+shape = SubResource("RectangleShape2D_solid")
+
+[node name="Base2" type="StaticBody2D" parent="Obstacles/Layout_Map3/Pyramid"]
+collision_mask = 6
+[node name="Sprite2D" type="Sprite2D" parent="Obstacles/Layout_Map3/Pyramid/Base2"]
+scale = Vector2(2, 2)
+texture = ExtResource("12_dirt")
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Obstacles/Layout_Map3/Pyramid/Base2"]
+shape = SubResource("RectangleShape2D_solid")
+
+[node name="Base3" type="StaticBody2D" parent="Obstacles/Layout_Map3/Pyramid"]
+position = Vector2(32, 0)
+collision_mask = 6
+[node name="Sprite2D" type="Sprite2D" parent="Obstacles/Layout_Map3/Pyramid/Base3"]
+scale = Vector2(2, 2)
+texture = ExtResource("12_dirt")
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Obstacles/Layout_Map3/Pyramid/Base3"]
+shape = SubResource("RectangleShape2D_solid")
+
+[node name="Mid1" type="StaticBody2D" parent="Obstacles/Layout_Map3/Pyramid"]
+position = Vector2(0, -32)
+collision_mask = 6
+[node name="Sprite2D" type="Sprite2D" parent="Obstacles/Layout_Map3/Pyramid/Mid1"]
+scale = Vector2(2, 2)
+texture = ExtResource("13_grass")
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Obstacles/Layout_Map3/Pyramid/Mid1"]
+shape = SubResource("RectangleShape2D_solid")
+
+[node name="Spikes_Pyramid" parent="Obstacles/Layout_Map3" instance=ExtResource("6_spikes")]
+position = Vector2(664, 345)
+
+[node name="Enemy_Hard" parent="Obstacles/Layout_Map3" instance=ExtResource("5_enemy")]
+position = Vector2(500, 340)
+
+[node name="ExitPortal" type="Area2D" parent="."]
+position = Vector2(2700, 335)
+
+[node name="Sprite2D" type="Sprite2D" parent="ExitPortal"]
+scale = Vector2(2, 2)
+texture = ExtResource("7_flag")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="ExitPortal"]
+shape = SubResource("RectangleShape2D_portal")
+
+[node name="Label" type="Label" parent="ExitPortal"]
+offset_left = -30.0
+offset_top = -80.0
+offset_right = 30.0
+offset_bottom = -60.0
+theme_override_font_sizes/font_size = 10
+text = "Map Tiếp"
+horizontal_alignment = 1
+
+[node name="Player" parent="." instance=ExtResource("3_player")]
+position = Vector2(50, 300)
+
+[node name="Camera2D" type="Camera2D" parent="Player"]
+zoom = Vector2(2.5, 2.5)
+limit_left = 0
+limit_right = 3000
+limit_bottom = 370
+limit_top = -200
+position_smoothing_enabled = true
+
+[node name="CanvasLayer" type="CanvasLayer" parent="."]
+
+[node name="HUD" type="Control" parent="CanvasLayer"]
+layout_mode = 3
+anchors_preset = 0
+offset_right = 40.0
+offset_bottom = 40.0
+
+[node name="BackButton" type="Button" parent="CanvasLayer/HUD"]
+layout_mode = 0
+offset_left = 20.0
+offset_top = 20.0
+offset_right = 100.0
+offset_bottom = 31.0
+text = "< Thoát"
+
+[node name="MapNameLabel" type="Label" parent="CanvasLayer/HUD"]
+layout_mode = 0
+offset_left = 120.0
+offset_top = 20.0
+offset_right = 300.0
+offset_bottom = 51.0
+theme_override_font_sizes/font_size = 18
+text = "Map Sơ Cấp"
+
+[node name="MapQuestionPanel" parent="CanvasLayer" instance=ExtResource("4_panel")]
+visible = false
+
+[connection signal="block_activated" from="Blocks/Block1" to="." method="_on_block_activated"]
+[connection signal="block_activated" from="Blocks/Block2" to="." method="_on_block_activated"]
+[connection signal="block_activated" from="Blocks/Block3" to="." method="_on_block_activated"]
+[connection signal="block_activated" from="Blocks/Block4" to="." method="_on_block_activated"]
+[connection signal="block_activated" from="Blocks/Block5" to="." method="_on_block_activated"]
+[connection signal="block_activated" from="Blocks/Block6" to="." method="_on_block_activated"]
+[connection signal="body_entered" from="ExitPortal" to="." method="_on_exit_portal_body_entered"]
+[connection signal="pressed" from="CanvasLayer/HUD/BackButton" to="." method="_on_back_button_pressed"]
