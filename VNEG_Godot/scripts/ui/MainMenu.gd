@@ -3,11 +3,11 @@ extends Control
 ##
 ## Xử lý giao diện Dashboard & Chọn Màn Chơi.
 
-@onready var welcome_label: Label = $VBoxContainer/Header/WelcomeLabel
-@onready var score_label: Label = $VBoxContainer/Header/ScoreLabel
-@onready var map_container: VBoxContainer = $VBoxContainer/MapContainer
-@onready var games_container: VBoxContainer = $VBoxContainer/GamesContainer
-@onready var play_button: Button = $VBoxContainer/GamesContainer/PlayButton
+@onready var welcome_label: Label = $VBoxContainer/HeaderPanel/Header/WelcomeLabel
+@onready var score_label: Label = $VBoxContainer/HeaderPanel/Header/ScoreLabel
+@onready var map_container: VBoxContainer = $VBoxContainer/MainPanel/HBoxContent/MapContainer/MapScroll/MapList
+@onready var games_container: VBoxContainer = $VBoxContainer/MainPanel/HBoxContent/GamesContainer/GameScroll/GameList
+@onready var play_button: Button = $VBoxContainer/MainPanel/HBoxContent/GamesContainer/PlayButton
 
 @onready var btn_teams: Button = $VBoxContainer/DashboardNav/BtnTeams
 @onready var btn_profile: Button = $VBoxContainer/DashboardNav/BtnProfile
@@ -25,6 +25,20 @@ func _ready():
 	btn_logout.text = "Đăng xuất"
 	btn_logout.pressed.connect(_on_logout_pressed)
 	$VBoxContainer/DashboardNav.add_child(btn_logout)
+	
+	# Role-gated navigation buttons
+	var user_role = AuthManager.get_user_role()
+	if user_role == "admin":
+		var btn_admin = Button.new()
+		btn_admin.text = "⚙️ Admin Panel"
+		btn_admin.pressed.connect(func(): get_tree().change_scene_to_file("res://scenes/AdminDashboard.tscn"))
+		$VBoxContainer/DashboardNav.add_child(btn_admin)
+	
+	if user_role == "admin" or user_role == "staff":
+		var btn_staff = Button.new()
+		btn_staff.text = "👥 Staff Panel"
+		btn_staff.pressed.connect(func(): get_tree().change_scene_to_file("res://scenes/StaffPanel.tscn"))
+		$VBoxContainer/DashboardNav.add_child(btn_staff)
 	
 	if AuthManager.is_logged_in():
 		welcome_label.text = "Xin chào, " + AuthManager.current_user.get("email", "Học sinh").split("@")[0] + "!"

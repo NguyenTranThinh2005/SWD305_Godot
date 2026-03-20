@@ -114,9 +114,15 @@ func _show_question(index: int) -> void:
 func _on_answer_submitted(_q_index: int, q_id: int, is_correct: bool, raw_ans: Variant) -> void:
 	if is_game_over: return
 	
-	# Lưu kết quả
-	GameManager.record_answer(q_id, raw_ans, is_correct)
-	
+	# Vô hiệu hóa toàn bộ nút
+	for child in choices_box.get_children():
+		if child is Button:
+			child.disabled = true
+		
+	var is_correct = (selected_index == correct_index)
+	var q_data = GameManager.game_questions[q_id]
+	var real_q_id = int(q_data.get("id", 0))
+	GameManager.record_answer(real_q_id, selected_index, is_correct)
 	if is_correct:
 		_trigger_gravity_flip()
 		
@@ -141,10 +147,16 @@ func _end_game() -> void:
 	for child in choices_box.get_children():
 		child.queue_free()
 		
-	var final_msg = "Bạn đã hoàn thành bài tập!"
+	var final_msg = "Kết quả: " + str(GameManager.stars) + " điểm!\nĐang lưu kết quả..."
 	question_label.text = final_msg
 	
-	# Xây dựng nút thoát
+	if GameManager.current_session_id != "":
+		await API.submit_answers(GameManager.current_session_id, GameManager.get_submission_data())
+		if GameManager.current_task_id != 0:
+			await API.complete_team_task(GameManager.current_task_id, int(GameManager.current_session_id))
+			
+	question_label.text = "Kết quả: " + str(GameManager.stars) + " điểm!\nCảm ơn bạn đã thi tài!"
+	
 	var btn_exit = Button.new()
 	btn_exit.text = "Về Dashboard"
 	btn_exit.disabled = true # Cấm bấm trong lúc gửi API

@@ -6,7 +6,11 @@ extends Node
 
 var current_session_id: int = 0
 var current_game_id: int = 0
+<<<<<<< HEAD
 var current_map_id: int = 1
+=======
+var current_task_id: int = 0
+>>>>>>> 11d205abce7c978c4788a2e2f04ecd88b7015f2c
 var game_questions: Array = []
 var answered_questions: Array = []
 
@@ -15,9 +19,10 @@ var coins: int = 0
 var stars: int = 0
 
 ## Khởi tạo trạng thái game mới
-func start_session(session_id: int, game_id: int) -> void:
-	current_session_id = session_id
+func start_session(session_id: Variant, game_id: int, task_id: int = 0) -> void:
+	current_session_id = int(session_id)
 	current_game_id = game_id
+	current_task_id = task_id
 	game_questions.clear()
 	answered_questions.clear()
 	hp = 3
@@ -28,6 +33,7 @@ func start_session(session_id: int, game_id: int) -> void:
 func clear_session() -> void:
 	current_session_id = 0
 	current_game_id = 0
+	current_task_id = 0
 	game_questions.clear()
 	answered_questions.clear()
 
